@@ -1,166 +1,196 @@
-_Minimum_Stack_Size = 256;
+/*
+******************************************************************************
+**
 
+**  File        : LinkerScript.ld
+**
+**  Author		: Puya_HC
+**
+**  Abstract    : Linker script for PY32F030x8 series
+**                64Kbytes FLASH and 8Kbytes RAM
+**
+**                Set heap size, stack size and stack location according
+**                to application requirements.
+**
+**                Set memory bank area and size if external memory is used.
+**
+**  Target      : Puya PY32
+**
+**  Distribution: The file is distributed “as is,” without any warranty
+**                of any kind.
+**
+*****************************************************************************
+** @attention
+**
+** <h2><center>&copy; COPYRIGHT(c) 2019 Puya Semiconductor</center></h2>
+**
+** Redistribution and use in source and binary forms, with or without modification,
+** are permitted provided that the following conditions are met:
+**   1. Redistributions of source code must retain the above copyright notice,
+**      this list of conditions and the following disclaimer.
+**   2. Redistributions in binary form must reproduce the above copyright notice,
+**      this list of conditions and the following disclaimer in the documentation
+**      and/or other materials provided with the distribution.
+**   3. Neither the name of Puya Semiconductor nor the names of its contributors
+**      may be used to endorse or promote products derived from this software
+**      without specific prior written permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+** AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+** DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+** FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+** DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+** SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+** CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+** OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**
+*****************************************************************************
+*/
+
+/* Entry Point */
 ENTRY(Reset_Handler)
 
-MEMORY {
-    FLASH(rx) : ORIGIN = 0x08000000, LENGTH = 32K
-    RAM(rwx) : ORIGIN = 0x20000000, LENGTH = 4K
+/* Highest address of the user mode stack */
+_estack = ORIGIN(RAM) + LENGTH(RAM);    /* end of RAM */
+/* Generate a link error if heap and stack don't fit into RAM */
+_Min_Heap_Size = 0x000;      /* required amount of heap  */
+_Min_Stack_Size = 0x400; /* required amount of stack */
+
+/* Specify the memory areas */
+MEMORY
+{
+RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 4K
+FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 32K
 }
 
-__ram_start__ = ORIGIN(RAM);
-__ram_size__  = LENGTH(RAM);
-__ram_end__   = __ram_start__ + __ram_size__;
-_estack = __ram_end__;
-/* highest address of the user mode stack */
-
-PROVIDE ( _Stack_Limit = _estack - _Minimum_Stack_Size );
-
-/* Sections Definitions */
-
+/* Define output sections */
 SECTIONS
 {
-    .text :
-    {
-        KEEP(*(.isr_vector))            /* Startup code */
-        *(.text)                   /* code */
-        *(.text.*)                 /* remaining code */
-        *(.rodata)                 /* read-only data (constants) */
-        *(.rodata.*)
-        *(.glue_7)
-        *(.glue_7t)
-        *(.vfp11_veneer)
-        *(.v4_bx)
-        *(.ARM.extab* .gnu.linkonce.armextab.*)
-    } >FLASH
+  /* The startup code goes first into FLASH */
+  .isr_vector :
+  {
+    . = ALIGN(4);
+    KEEP(*(.isr_vector)) /* Startup code */
+    . = ALIGN(4);
+  } >FLASH
 
-    /* for exception handling/unwind - some Newlib functions (in
-    common with C++ and STDC++) use this. */
-    .ARM.extab :
-    {
-        *(.ARM.extab* .gnu.linkonce.armextab.*)
+  /* The program code and other data goes into FLASH */
+  .text :
+  {
+    . = ALIGN(4);
+    *(.text)           /* .text sections (code) */
+    *(.text*)          /* .text* sections (code) */
+    *(.glue_7)         /* glue arm to thumb code */
+    *(.glue_7t)        /* glue thumb to arm code */
+    *(.eh_frame)
 
-    } > FLASH
-
-     __exidx_start = .;
-    .ARM.exidx :
-    {
-        *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-    } > FLASH
-        __exidx_end = .;
+    KEEP (*(.init))
+    KEEP (*(.fini))
 
     . = ALIGN(4);
-     _etext = .;
-    /* This is used by the startup in order to initialize the .data secion
-*/
-    _sidata = _etext;
+    _etext = .;        /* define a global symbols at end of code */
+  } >FLASH
 
-    /* This is the initialized data section
-    The program executes knowing that the data is in the RAM
-    but the loader puts the initial values in the FLASH (inidata).
-    It is one task of the startup to copy the initial values from FLASH to
-RAM. */
-    .data  : AT ( _sidata )
-    {
-        . = ALIGN(4);
-        /* This is used by the startup in order to initialize the .data
-secion */
-        _sdata = . ;
+  /* Constant data goes into FLASH */
+  .rodata :
+  {
+    . = ALIGN(4);
+    *(.rodata)         /* .rodata sections (constants, strings, etc.) */
+    *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
+    . = ALIGN(4);
+  } >FLASH
 
-        *(.data)
-        *(.data.*)
+  .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
+  .ARM : {
+    __exidx_start = .;
+    *(.ARM.exidx*)
+    __exidx_end = .;
+  } >FLASH
 
-        . = ALIGN(4);
-        /* This is used by the startup in order to initialize the .data
-secion */
-        _edata = . ;
-    } >RAM
+  .preinit_array     :
+  {
+    PROVIDE_HIDDEN (__preinit_array_start = .);
+    KEEP (*(.preinit_array*))
+    PROVIDE_HIDDEN (__preinit_array_end = .);
+  } >FLASH
+  .init_array :
+  {
+    PROVIDE_HIDDEN (__init_array_start = .);
+    KEEP (*(SORT(.init_array.*)))
+    KEEP (*(.init_array*))
+    PROVIDE_HIDDEN (__init_array_end = .);
+  } >FLASH
+  .fini_array :
+  {
+    PROVIDE_HIDDEN (__fini_array_start = .);
+    KEEP (*(SORT(.fini_array.*)))
+    KEEP (*(.fini_array*))
+    PROVIDE_HIDDEN (__fini_array_end = .);
+  } >FLASH
 
+  /* used by the startup to initialize data */
+    _sidata = LOADADDR(.data);
 
-    /* This is the uninitialized data section */
-    .bss :
-    {
-        . = ALIGN(4);
-        /* This is used by the startup in order to initialize the .bss
-secion */
-        _sbss = .;
-	__bss_start__ = _sbss;
-        *(.bss)
-        *(.bss.*)
-        *(COMMON)
-
-        . = ALIGN(4);
-        /* This is used by the startup in order to initialize the .bss
-secion */
-        _ebss = . ;
-	__bss_end__ = _ebss;
-    } >RAM
-
-    PROVIDE ( end = _ebss );
-    PROVIDE ( _end = _ebss );
-    PROVIDE ( _exit = _ebss );
-    PROVIDE (_stackend = ORIGIN(RAM) + LENGTH(RAM) - _Minimum_Stack_Size);
-
-    /* This is the user stack section
-    This is just to check that there is enough RAM left for the User mode
-stack
-    It should generate an error if it's full.
-     */
-    ._usrstack :
-    {
-        . = ALIGN(4);
-        _susrstack = . ;
-
-        . = . + _Minimum_Stack_Size ;
-
-        . = ALIGN(4);
-        _eusrstack = . ;
-    } >RAM
+  .vect_data 0x20000000 :
+  {
+    . = ALIGN(4);
+    *(.vectable_sram)
+  } >RAM AT> FLASH
 
 
+  /* Initialized data sections goes into RAM, load LMA copy after code */
+  .data : 
+  {
+    . = ALIGN(4);
+    _sdata = .;        /* create a global symbol at data start */
+    *(.data)           /* .data sections */
+    *(.data*)          /* .data* sections */
 
-    /* after that it's only debugging information. */
+    . = ALIGN(4);
+    _edata = .;        /* define a global symbol at data end */
+  } >RAM AT> FLASH
 
-    /* remove the debugging information from the standard libraries */
-/*
-    DISCARD :
-    {
-     libc.a ( * )
-     libm.a ( * )
-     libgcc.a ( * )
-     }
-*/
+  
+  /* Uninitialized data section */
+  . = ALIGN(4);
+  .bss :
+  {
+    /* This is used by the startup in order to initialize the .bss secion */
+    _sbss = .;         /* define a global symbol at bss start */
+    __bss_start__ = _sbss;
+    *(.bss)
+    *(.bss*)
+    *(COMMON)
 
-    /* Stabs debugging sections.  */
-    .stab          0 : { *(.stab) }
-    .stabstr       0 : { *(.stabstr) }
-    .stab.excl     0 : { *(.stab.excl) }
-    .stab.exclstr  0 : { *(.stab.exclstr) }
-    .stab.index    0 : { *(.stab.index) }
-    .stab.indexstr 0 : { *(.stab.indexstr) }
-    .comment       0 : { *(.comment) }
-    /* DWARF debug sections.
-       Symbols in the DWARF debugging sections are relative to the beginning
-       of the section so we begin them at 0.  */
-    /* DWARF 1 */
-    .debug          0 : { *(.debug) }
-    .line           0 : { *(.line) }
-    /* GNU DWARF 1 extensions */
-    .debug_srcinfo  0 : { *(.debug_srcinfo) }
-    .debug_sfnames  0 : { *(.debug_sfnames) }
-    /* DWARF 1.1 and DWARF 2 */
-    .debug_aranges  0 : { *(.debug_aranges) }
-    .debug_pubnames 0 : { *(.debug_pubnames) }
-    /* DWARF 2 */
-    .debug_info     0 : { *(.debug_info .gnu.linkonce.wi.*) }
-    .debug_abbrev   0 : { *(.debug_abbrev) }
-    .debug_line     0 : { *(.debug_line) }
-    .debug_frame    0 : { *(.debug_frame) }
-    .debug_str      0 : { *(.debug_str) }
-    .debug_loc      0 : { *(.debug_loc) }
-    .debug_macinfo  0 : { *(.debug_macinfo) }
-    /* SGI/MIPS DWARF 2 extensions */
-    .debug_weaknames 0 : { *(.debug_weaknames) }
-    .debug_funcnames 0 : { *(.debug_funcnames) }
-    .debug_typenames 0 : { *(.debug_typenames) }
-    .debug_varnames  0 : { *(.debug_varnames) }
+    . = ALIGN(4);
+    _ebss = .;         /* define a global symbol at bss end */
+    __bss_end__ = _ebss;
+  } >RAM
+
+  /* User_heap_stack section, used to check that there is enough RAM left */
+  ._user_heap_stack :
+  {
+    . = ALIGN(8);
+    PROVIDE ( end = . );
+    PROVIDE ( _end = . );
+    . = . + _Min_Heap_Size;
+    . = . + _Min_Stack_Size;
+    . = ALIGN(8);
+  } >RAM
+
+  
+
+  /* Remove information from the standard libraries */
+  /DISCARD/ :
+  {
+    libc.a ( * )
+    libm.a ( * )
+    libgcc.a ( * )
+  }
+
+  .ARM.attributes 0 : { *(.ARM.attributes) }
 }
+
+

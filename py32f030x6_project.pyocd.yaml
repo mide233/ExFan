@@ -1,0 +1,6 @@
+# PY32F030x4 pyOCD configuration file
+
+target: py32f030x6
+
+reset:
+    type: hw  # Hardware reset

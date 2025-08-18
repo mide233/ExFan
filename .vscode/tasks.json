@@ -1,0 +1,38 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Flash AIR001",
+            "type": "process",
+            "command": "pyocd",
+            "args": [
+                "flash",
+                "--config",
+                "py32f030x6_project.pyocd.yaml",
+                "-t",
+                "py32f030x6",
+                "-f",
+                "4M",
+                "build/exfan.elf"
+            ],
+            "dependsOn": ["CMake: build"],
+            "options": {
+                "cwd": "${workspaceRoot}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "type": "cmake",
+            "label": "CMake: build",
+            "command": "build",
+            "targets": ["all"],
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "CMake template build task"
+        }
+    ]
+}
