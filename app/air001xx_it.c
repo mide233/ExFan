@@ -1,4 +1,5 @@
 #include "air001xx_it.h"
+#include "air001xx_hal.h"
 
 void NMI_Handler(void)
 {
@@ -21,5 +22,5 @@ void PendSV_Handler(void)
 
 void SysTick_Handler(void)
 {
-    // HAL_IncTick();
+    HAL_IncTick();
 }
