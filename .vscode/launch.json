@@ -11,11 +11,20 @@
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "pyocd",
-            // "configFiles": ["interface/cmsis-dap.cfg", "target/stm32f4x.cfg"],
+            "serverpath": "pyocd",
+            "configFiles": ["py32f030x6_project.pyocd.yaml"],
+            "targetId": "py32f030x6",
             "searchDir": [],
             "svdFile": "./air001xx.svd",
             "runToEntryPoint": "main",
-            "showDevDebugOutput": "none"
+            "showDevDebugOutput": "raw",
+            "preLaunchTask": "CMake: build",
+            "postLaunchCommands": [
+                "set confirm off",
+                "monitor reset halt",
+                "load"
+            ],
+            "breakAfterReset": true
         }
     ]
 }

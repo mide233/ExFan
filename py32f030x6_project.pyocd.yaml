@@ -4,3 +4,17 @@ target: py32f030x6
 
 reset:
     type: hw  # Hardware reset
+
+debug:
+    halt_on_connect: true
+    step_into_interrupt: false
+    wait_for_core_start: true
+
+connect:
+    halt_on_connect: true
+    pre_reset_delay: 0.1
+    post_reset_delay: 0.1
+
+flash:
+    chip_erase: false
+    smart_flash: true

@@ -44,7 +44,7 @@ include_directories(
 )
 
 # 宏定义
-# add_definitions(-DDEBUG=1)
+add_definitions(-DDEBUG=1)
 
 # 源码文件
 file(GLOB_RECURSE SOURCES
@@ -127,8 +127,8 @@ add_compile_options(-mcpu=cortex-m0 -mthumb -mthumb-interwork)
 add_compile_options(-ffunction-sections -fdata-sections -fno-common -fmessage-length=0)
 
 # optimizations (-O0 -O1 -O2 -O3 -Os -Ofast -Og -flto)
-set(CMAKE_C_FLAGS_DEBUG "-g -DDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_C_FLAGS_DEBUG "-O0 -g -DDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 set(CMAKE_C_FLAGS_RELEASE "-Os -flto")
 set(CMAKE_CXX_FLAGS_RELEASE "-Os -flto")
 
