@@ -117,6 +117,7 @@ file(GLOB_RECURSE SOURCES
     # "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_ll_utils.c"
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/Legacy/*.c"
     "app/*.c"
+    "app/*.cpp"
 )
 
 # 链接参数
@@ -141,7 +142,7 @@ add_link_options(-T ${LINKER_SCRIPT})
 # 编译参数 一般不用改
 add_compile_options(
     $<$<COMPILE_LANGUAGE:C>:-std=c99>
-    $<$<COMPILE_LANGUAGE:CXX>:-std=c++17>
+    $<$<COMPILE_LANGUAGE:CXX>:-std=c++11>
     $<$<COMPILE_LANGUAGE:CXX>:-fms-extensions>
     $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
     $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
