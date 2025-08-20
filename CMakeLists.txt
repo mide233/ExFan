@@ -44,6 +44,8 @@ include_directories(
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Inc/Legacy"
     "app"
     "driver"
+    "os"
+    "os/pt-1.4"
 )
 
 # 源码文件

@@ -11,7 +11,6 @@ extern "C"
     // (for) C PART
 
 #include <sys/stat.h>
-#include <stdio.h>
 #include "air001xx_hal.h"
 
     extern I2C_HandleTypeDef I2cHandle;

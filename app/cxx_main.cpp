@@ -11,16 +11,21 @@ I2C_HandleTypeDef I2cHandle;
 uint8_t aTxBuffer[15] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 uint8_t aRxBuffer[15] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
+void log(const char *fmt, ...) // Just a dummy log function
+{
+    return;
+}
+
 // I2C设备地址扫描函数
 void I2C_Scanner(void)
 {
-    printf("正在扫描I2C设备...\r\n");
-    printf("     0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F\r\n");
+    log("正在扫描I2C设备...\r\n");
+    log("     0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F\r\n");
     uint8_t devices_found = 0;
 
     for (uint8_t row = 0; row < 8; row++)
     {
-        printf("%02X: ", row * 16);
+        log("%02X: ", row * 16);
 
         for (uint8_t col = 0; col < 16; col++)
         {
@@ -29,26 +34,26 @@ void I2C_Scanner(void)
             // 跳过保留地址
             if (addr < 0x08 || addr > 0x77)
             {
-                printf("   ");
+                log("   ");
             }
             else
             {
                 // 尝试检测设备
                 if (HAL_I2C_IsDeviceReady(&I2cHandle, addr << 1, 1, 10) == HAL_OK)
                 {
-                    printf("%02X ", addr);
+                    log("%02X ", addr);
                     devices_found++;
                 }
                 else
                 {
-                    printf("-- ");
+                    log("-- ");
                 }
             }
         }
-        printf("\r\n");
+        log("\r\n");
     }
 
-    printf("扫描完成，发现 %d 个I2C设备\r\n\r\n", devices_found);
+    log("扫描完成，发现 %d 个I2C设备\r\n\r\n", devices_found);
 }
 
 // 读取I2C设备的寄存器数据
@@ -60,7 +65,7 @@ HAL_StatusTypeDef I2C_ReadRegister(uint8_t device_addr, uint8_t reg_addr, uint8_
     status = HAL_I2C_Master_Transmit(&I2cHandle, device_addr << 1, &reg_addr, 1, 1000);
     if (status != HAL_OK)
     {
-        printf("写入寄存器地址失败: 0x%02X\r\n", status);
+        log("写入寄存器地址失败: 0x%02X\r\n", status);
         return status;
     }
 
@@ -68,7 +73,7 @@ HAL_StatusTypeDef I2C_ReadRegister(uint8_t device_addr, uint8_t reg_addr, uint8_
     status = HAL_I2C_Master_Receive(&I2cHandle, device_addr << 1, data, length, 1000);
     if (status != HAL_OK)
     {
-        printf("读取寄存器数据失败: 0x%02X\r\n", status);
+        log("读取寄存器数据失败: 0x%02X\r\n", status);
         return status;
     }
 
@@ -83,7 +88,7 @@ HAL_StatusTypeDef I2C_WriteRegister(uint8_t device_addr, uint8_t reg_addr, uint8
 
     if (length > 255)
     {
-        printf("数据长度超出限制\r\n");
+        log("数据长度超出限制\r\n");
         return HAL_ERROR;
     }
 
@@ -98,7 +103,7 @@ HAL_StatusTypeDef I2C_WriteRegister(uint8_t device_addr, uint8_t reg_addr, uint8
     status = HAL_I2C_Master_Transmit(&I2cHandle, device_addr << 1, tx_buffer, length + 1, 1000);
     if (status != HAL_OK)
     {
-        printf("写入寄存器数据失败: 0x%02X\r\n", status);
+        log("写入寄存器数据失败: 0x%02X\r\n", status);
         return status;
     }
 
@@ -115,12 +120,12 @@ HAL_StatusTypeDef I2C_TestDevice(uint8_t device_addr)
     status = HAL_I2C_IsDeviceReady(&I2cHandle, device_addr << 1, 3, 1000);
     if (status == HAL_OK)
     {
-        printf("设备地址 0x%02X 响应正常\r\n", device_addr);
+        log("设备地址 0x%02X 响应正常\r\n", device_addr);
         return HAL_OK;
     }
     else
     {
-        printf("设备地址 0x%02X 无响应\r\n", device_addr);
+        log("设备地址 0x%02X 无响应\r\n", device_addr);
         return status;
     }
 }
@@ -152,7 +157,7 @@ void CppMain()
         // 尝试读取设备ID寄存器（地址0x00）
         if (I2C_ReadRegister(0x3D, 0x00, &device_id, 1) == HAL_OK)
         {
-            printf("设备0x3D的ID寄存器值: 0x%02X\r\n", device_id);
+            log("设备0x3D的ID寄存器值: 0x%02X\r\n", device_id);
         }
     }
 
