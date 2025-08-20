@@ -48,8 +48,11 @@ include_directories(
 
 # 源码文件
 file(GLOB_RECURSE SOURCES
+    # CMSIS PART
     "luatos-soc-air001/Libraries/CMSIS/Device/AIR001xx/Source/gcc/startup_air001xx.s"
     "luatos-soc-air001/Libraries/CMSIS/Device/AIR001xx/Source/*.c"
+
+    # HAL DRIVER PART
     # "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/*.c"
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_hal.c"
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_hal_adc.c"
@@ -96,6 +99,8 @@ file(GLOB_RECURSE SOURCES
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_hal_uart.c"
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_hal_usart.c"
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_hal_wwdg.c"
+
+    # LL DRIVER PART
     # "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_ll_adc.c"
     # "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_ll_comp.c"
     # "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_ll_crc.c"
@@ -117,6 +122,10 @@ file(GLOB_RECURSE SOURCES
     # "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_ll_utils.c"
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/Legacy/*.c"
 
+    # USER MSP CFG
+    "app/air001xx_hal_msp.c"
+
+    # USER CODE
     "app/*.c"
     "app/*.cpp"
     "driver/*.c"

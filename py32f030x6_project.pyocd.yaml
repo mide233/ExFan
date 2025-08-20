@@ -2,6 +2,8 @@
 
 target: py32f030x6
 
+frequency: 4000000
+
 reset:
     type: hw  # Hardware reset
 
