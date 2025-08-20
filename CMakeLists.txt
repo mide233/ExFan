@@ -34,6 +34,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 99)
 
 
+add_definitions(-DDEBUG=1)
+
 # 头文件路径
 include_directories(
     "luatos-soc-air001/Libraries/CMSIS/Device/AIR001xx/Include"
@@ -41,10 +43,8 @@ include_directories(
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Inc"
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Inc/Legacy"
     "app"
+    "driver"
 )
-
-# 宏定义
-add_definitions(-DDEBUG=1)
 
 # 源码文件
 file(GLOB_RECURSE SOURCES
@@ -67,7 +67,7 @@ file(GLOB_RECURSE SOURCES
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_hal_flash.c"
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_hal_gpio.c"
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_hal_i2c.c"
-    "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_hal_i2c_ex.c"
+    # "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_hal_i2c_ex.c"
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_hal_i2s.c"
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_hal_irda.c"
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_hal_iwdg.c"
@@ -116,16 +116,20 @@ file(GLOB_RECURSE SOURCES
     # "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_ll_usb.c"
     # "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/air001xx_ll_utils.c"
     "luatos-soc-air001/Libraries/AIR001xx_HAL_Driver/Src/Legacy/*.c"
+
     "app/*.c"
     "app/*.cpp"
+    "driver/*.c"
+    "driver/*.cpp"
 )
 
 # 链接参数
 set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/air001.ld")
-
-# define CPU OPTIONS
-add_compile_options(-mcpu=cortex-m0 -mthumb -mthumb-interwork)
-add_compile_options(-ffunction-sections -fdata-sections -fno-common -fmessage-length=0)
+add_link_options(-Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
+add_link_options(-specs=nano.specs -specs=nosys.specs -static -lc -lm)
+add_link_options(-Wl,--no-warn-rwx-segments)
+add_link_options(-mcpu=cortex-m0 -mthumb -mthumb-interwork)
+add_link_options(-T ${LINKER_SCRIPT})
 
 # optimizations (-O0 -O1 -O2 -O3 -Os -Ofast -Og -flto)
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g -DDEBUG")
@@ -133,11 +137,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 set(CMAKE_C_FLAGS_RELEASE "-Os -flto")
 set(CMAKE_CXX_FLAGS_RELEASE "-Os -flto")
 
-add_link_options(-Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
-add_link_options(-specs=nano.specs -specs=nosys.specs -static -lc -lm)
-add_link_options(-Wl,--no-warn-rwx-segments)
-add_link_options(-mcpu=cortex-m0 -mthumb -mthumb-interwork)
-add_link_options(-T ${LINKER_SCRIPT})
+# define CPU OPTIONS
+add_compile_options(-mcpu=cortex-m0 -mthumb -mthumb-interwork)
+add_compile_options(-ffunction-sections -fdata-sections -fno-common -fmessage-length=0)
 
 # 编译参数 一般不用改
 add_compile_options(

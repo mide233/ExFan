@@ -26,13 +26,13 @@ extern "C"
 {
 #endif
 
-/* Exported types ------------------------------------------------------------*/
-/* Exported constants --------------------------------------------------------*/
+    /* Exported types ------------------------------------------------------------*/
+    /* Exported constants --------------------------------------------------------*/
 
-/* ########################## Module Selection ############################## */
-/**
- * @brief This is the list of modules to be used in the HAL driver
- */
+    /* ########################## Module Selection ############################## */
+    /**
+     * @brief This is the list of modules to be used in the HAL driver
+     */
 
 #define AIR001_DEV
 
@@ -49,7 +49,7 @@ extern "C"
 #define HAL_FLASH_MODULE_ENABLED
 #define HAL_GPIO_MODULE_ENABLED
 // #define HAL_EXTI_MODULE_ENABLED
-// #define HAL_I2C_MODULE_ENABLED
+#define HAL_I2C_MODULE_ENABLED
 // #define HAL_I2S_MODULE_ENABLED
 // #define HAL_IRDA_MODULE_ENABLED
 // #define HAL_IWDG_MODULE_ENABLED
