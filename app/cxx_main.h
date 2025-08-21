@@ -12,13 +12,16 @@ extern "C"
 
 #include <sys/stat.h>
 #include "air001xx_hal.h"
+#include "coroOS.h"
+#include "driver_ssd1315.h"
+#include "driver_ssd1315_hal.h"
 
     extern I2C_HandleTypeDef I2cHandle;
+    extern ssd1315_handle_t OledHandle;
 
     void CppMain(); // 主程序函数
     void SystemClockConfig(void);
     void Error_Handler(void);
-    HAL_StatusTypeDef I2C_TestDevice(uint8_t device_addr); // 测试特定I2C设备地址
 
     // C PART END
 

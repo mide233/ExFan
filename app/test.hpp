@@ -61,6 +61,24 @@ const uint8_t SSD1306_Init_Array[] = {
     0xAF  // Display ON in normal mode
 };
 
+uint8_t OLED_Write(uint8_t *dat, uint8_t send_cmd, uint16_t len)
+{
+    if (send_cmd == 0x00)
+    {
+        HAL_I2C_Mem_Write_DMA(&I2cHandle, 0x7A, 0x00, I2C_MEMADD_SIZE_8BIT, dat, 1); //
+    }
+    else
+    {
+        HAL_I2C_Mem_Write_DMA(&I2cHandle, 0x7A, 0x40, I2C_MEMADD_SIZE_8BIT, dat, len);
+    }
+
+    while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_READY)
+    {
+    }
+
+    return 1;
+}
+
 // 测试特定地址的I2C设备
 HAL_StatusTypeDef I2C_TestDevice(uint8_t device_addr)
 {
@@ -83,7 +101,8 @@ void OLED_WriteByte(uint8_t dat, uint8_t cmd)
 {
     if (cmd == OLED_CMD)
     {
-        HAL_I2C_Mem_Write_DMA(&I2cHandle, 0x7A, 0x00, I2C_MEMADD_SIZE_8BIT, &dat, 1); //
+        // HAL_I2C_Mem_Write_DMA(&I2cHandle, 0x7A, 0x00, I2C_MEMADD_SIZE_8BIT, &dat, 1); //
+        OLED_Write(&dat, 0, 1);
     }
     else
     {
@@ -110,7 +129,7 @@ void run_test()
         OLED_WriteByte(0x14, OLED_CMD); // 开启电荷泵
         OLED_WriteByte(0xAF, OLED_CMD); // 点亮屏幕
 
-        // HAL_Delay(100); // 等待屏幕稳定
+        HAL_Delay(100); // 等待屏幕稳定
 
         // OLED_WriteByte(0x8D, OLED_CMD); // 电荷泵使能
         // OLED_WriteByte(0x10, OLED_CMD); // 开启电荷泵
@@ -126,5 +145,6 @@ void run_test()
         }
     }
 
-    HAL_I2C_Mem_Write_DMA(&I2cHandle, 0x7A, 0x40, I2C_MEMADD_SIZE_8BIT, &g_ucaOledRam[0][0], 1024);
+    // HAL_I2C_Mem_Write_DMA(&I2cHandle, 0x7A, 0x40, I2C_MEMADD_SIZE_8BIT, &g_ucaOledRam[0][0], 1024);
+    OLED_Write(&g_ucaOledRam[0][0], 1, 1024);
 }
