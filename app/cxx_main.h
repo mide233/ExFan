@@ -15,7 +15,9 @@ extern "C"
 
     extern I2C_HandleTypeDef I2cHandle;
 
-    void CppMain();                                        // 主程序函数
+    void CppMain(); // 主程序函数
+    void SystemClockConfig(void);
+    void Error_Handler(void);
     HAL_StatusTypeDef I2C_TestDevice(uint8_t device_addr); // 测试特定I2C设备地址
 
     // C PART END

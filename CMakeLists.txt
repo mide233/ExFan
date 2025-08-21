@@ -130,6 +130,7 @@ file(GLOB_RECURSE SOURCES
     # USER CODE
     "app/*.c"
     "app/*.cpp"
+    "app/*.hpp"
     "driver/*.c"
     "driver/*.cpp"
 )

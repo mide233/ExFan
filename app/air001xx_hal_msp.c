@@ -129,7 +129,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
   HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 1, 1); /* 中断优先级设置 */
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);         /* 使能DMA通道1中断 */
 
-  HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 0, 1); /* 中断优先级设置 */
+  HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 1, 1); /* 中断优先级设置 */
   HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);         /* 使能DMA通道2_3中断 */
 }
 
