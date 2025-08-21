@@ -1,113 +1,26 @@
 // cxx_main.cpp
 #include "cxx_main.h"
 
-#define DARA_LENGTH 15                   /* 数据长度 */
-#define I2C_ADDRESS 0xA0                 /* 本机地址0xA0 */
+#define I2C_ADDRESS 0xAA                 /* 本机地址0xA0 */
 #define I2C_SPEEDCLOCK 400000            /* 通讯速度400K */
 #define I2C_DUTYCYCLE I2C_DUTYCYCLE_16_9 /* 占空比 */
 
+#define OLED_CMD 0            // 写命令
+#define OLED_DATA 1           // 写数据
+uint8_t g_ucaOledRam[8][128]; /*显存*/
+
 I2C_HandleTypeDef I2cHandle;
 
-uint8_t aTxBuffer[15] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-uint8_t aRxBuffer[15] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-void log(const char *fmt, ...) // Just a dummy log function
+void OLED_WriteByte(uint8_t dat, uint8_t cmd)
 {
-    return;
-}
-
-// I2C设备地址扫描函数
-void I2C_Scanner(void)
-{
-    log("正在扫描I2C设备...\r\n");
-    log("     0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F\r\n");
-    uint8_t devices_found = 0;
-
-    for (uint8_t row = 0; row < 8; row++)
+    if (cmd == OLED_CMD)
     {
-        log("%02X: ", row * 16);
-
-        for (uint8_t col = 0; col < 16; col++)
-        {
-            uint8_t addr = row * 16 + col;
-
-            // 跳过保留地址
-            if (addr < 0x08 || addr > 0x77)
-            {
-                log("   ");
-            }
-            else
-            {
-                // 尝试检测设备
-                if (HAL_I2C_IsDeviceReady(&I2cHandle, addr << 1, 1, 10) == HAL_OK)
-                {
-                    log("%02X ", addr);
-                    devices_found++;
-                }
-                else
-                {
-                    log("-- ");
-                }
-            }
-        }
-        log("\r\n");
+        HAL_I2C_Mem_Write(&I2cHandle, 0x7A, 0x00, I2C_MEMADD_SIZE_8BIT, &dat, 1, 100); //
     }
-
-    log("扫描完成，发现 %d 个I2C设备\r\n\r\n", devices_found);
-}
-
-// 读取I2C设备的寄存器数据
-HAL_StatusTypeDef I2C_ReadRegister(uint8_t device_addr, uint8_t reg_addr, uint8_t *data, uint16_t length)
-{
-    HAL_StatusTypeDef status;
-
-    // 先写入寄存器地址
-    status = HAL_I2C_Master_Transmit(&I2cHandle, device_addr << 1, &reg_addr, 1, 1000);
-    if (status != HAL_OK)
+    else
     {
-        log("写入寄存器地址失败: 0x%02X\r\n", status);
-        return status;
+        HAL_I2C_Mem_Write(&I2cHandle, 0x7A, 0x40, I2C_MEMADD_SIZE_8BIT, &dat, 1, 100); //
     }
-
-    // 读取寄存器数据
-    status = HAL_I2C_Master_Receive(&I2cHandle, device_addr << 1, data, length, 1000);
-    if (status != HAL_OK)
-    {
-        log("读取寄存器数据失败: 0x%02X\r\n", status);
-        return status;
-    }
-
-    return HAL_OK;
-}
-
-// 写入I2C设备的寄存器数据
-HAL_StatusTypeDef I2C_WriteRegister(uint8_t device_addr, uint8_t reg_addr, uint8_t *data, uint16_t length)
-{
-    HAL_StatusTypeDef status;
-    uint8_t tx_buffer[256]; // 临时缓冲区
-
-    if (length > 255)
-    {
-        log("数据长度超出限制\r\n");
-        return HAL_ERROR;
-    }
-
-    // 组合寄存器地址和数据
-    tx_buffer[0] = reg_addr;
-    for (uint16_t i = 0; i < length; i++)
-    {
-        tx_buffer[i + 1] = data[i];
-    }
-
-    // 发送数据
-    status = HAL_I2C_Master_Transmit(&I2cHandle, device_addr << 1, tx_buffer, length + 1, 1000);
-    if (status != HAL_OK)
-    {
-        log("写入寄存器数据失败: 0x%02X\r\n", status);
-        return status;
-    }
-
-    return HAL_OK;
 }
 
 // 测试特定地址的I2C设备
@@ -120,20 +33,65 @@ HAL_StatusTypeDef I2C_TestDevice(uint8_t device_addr)
     status = HAL_I2C_IsDeviceReady(&I2cHandle, device_addr << 1, 3, 1000);
     if (status == HAL_OK)
     {
-        log("设备地址 0x%02X 响应正常\r\n", device_addr);
         return HAL_OK;
     }
     else
     {
-        log("设备地址 0x%02X 无响应\r\n", device_addr);
         return status;
     }
+}
+
+void SystemClockConfig(void)
+{
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+    /* 配置振荡器 */
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSE |
+                                       RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_LSE;
+    RCC_OscInitStruct.HSIState = RCC_HSI_ON;                          /* 启用HSI */
+    RCC_OscInitStruct.HSIDiv = RCC_HSI_DIV1;                          /* HSI不分频 */
+    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_24MHz; /* HSI校准频率24MHz */
+    RCC_OscInitStruct.HSEState = RCC_HSE_OFF;                         /* 关闭HSE */
+    RCC_OscInitStruct.LSIState = RCC_LSI_OFF;                         /* 关闭LSI */
+    RCC_OscInitStruct.LSEState = RCC_LSE_OFF;                         /* 关闭LSE */
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_OFF;                     /* 关闭PLL (使用HSI直接作为系统时钟) */
+
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    {
+        while (1)
+            ;
+    }
+
+    /* 配置系统时钟 */
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI; /* 配置HSI作为系统时钟源 */
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;     /* AHB时钟不分频 */
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;      /* APB1时钟不分频 */
+
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+    {
+        while (1)
+            ;
+    }
+
+    /* 配置SysTick为1ms中断 */
+    if (HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000) != HAL_OK)
+    {
+        while (1)
+            ;
+    }
+
+    /* 配置SysTick中断优先级 */
+    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 }
 
 // 主程序入口
 void CppMain()
 {
     HAL_Init();
+    SystemClockConfig();
+
     I2cHandle.Instance = I2C;                                 /* I2C */
     I2cHandle.Init.ClockSpeed = I2C_SPEEDCLOCK;               /* I2C通讯速度 */
     I2cHandle.Init.DutyCycle = I2C_DUTYCYCLE;                 /* I2C占空比 */
@@ -146,24 +104,67 @@ void CppMain()
             ;
     }
 
-    // 执行I2C设备扫描
-    I2C_Scanner();
-    I2C_TestDevice(0x3D);
-
     // 示例：尝试读取设备的ID寄存器（如果设备存在）
     uint8_t device_id = 0;
-    if (I2C_TestDevice(0x3D) == HAL_OK) // 如果RTC芯片存在
+    if (1) // 如果RTC芯片存在
     {
-        // 尝试读取设备ID寄存器（地址0x00）
-        if (I2C_ReadRegister(0x3D, 0x00, &device_id, 1) == HAL_OK)
+        OLED_WriteByte(0xAE, OLED_CMD); //--turn off oled panel
+        OLED_WriteByte(0x00, OLED_CMD); //---set low column address
+        OLED_WriteByte(0x10, OLED_CMD); //---set high column address
+        OLED_WriteByte(0x40, OLED_CMD); //--set start line address  Set Mapping RAM Display Start Line (0x00~0x3F)
+        OLED_WriteByte(0x81, OLED_CMD); //--set contrast control register
+        OLED_WriteByte(0xCF, OLED_CMD); // Set SEG Output Current Brightness
+        OLED_WriteByte(0xA1, OLED_CMD); //--Set SEG/Column Mapping     0xa0左右反置 0xa1正常
+        OLED_WriteByte(0xC8, OLED_CMD); // Set COM/Row Scan Direction   0xc0上下反置 0xc8正常
+        OLED_WriteByte(0xA6, OLED_CMD); //--set normal display
+        OLED_WriteByte(0xA8, OLED_CMD); //--set multiplex ratio(1 to 64)
+        OLED_WriteByte(0x3f, OLED_CMD); //--1/64 duty
+        OLED_WriteByte(0xD3, OLED_CMD); //-set display offset        Shift Mapping RAM Counter (0x00~0x3F)
+        OLED_WriteByte(0x00, OLED_CMD); //-not offset
+        OLED_WriteByte(0xd5, OLED_CMD); //--set display clock divide ratio/oscillator frequency
+        OLED_WriteByte(0x80, OLED_CMD); //--set divide ratio, Set Clock as 100 Frames/Sec
+        OLED_WriteByte(0xD9, OLED_CMD); //--set pre-charge period
+        OLED_WriteByte(0xF1, OLED_CMD); // Set Pre-Charge as 15 Clocks & Discharge as 1 Clock
+        OLED_WriteByte(0xDA, OLED_CMD); //--set com pins hardware configuration
+        OLED_WriteByte(0x12, OLED_CMD);
+        OLED_WriteByte(0xDB, OLED_CMD); //--set vcomh
+        OLED_WriteByte(0x40, OLED_CMD); // Set VCOM Deselect Level
+        OLED_WriteByte(0x20, OLED_CMD); //-Set Page Addressing Mode (0x00/0x01/0x02)
+        OLED_WriteByte(0x00, OLED_CMD); //
+        OLED_WriteByte(0x8D, OLED_CMD); //--set Charge Pump enable/disable
+        OLED_WriteByte(0x14, OLED_CMD); //--set(0x10) disable
+        OLED_WriteByte(0xA4, OLED_CMD); // Disable Entire Display On (0xa4/0xa5)
+        OLED_WriteByte(0xA6, OLED_CMD); // Disable Inverse Display On (0xa6/a7)
+        OLED_WriteByte(0xAF, OLED_CMD);
+
+        // 寻址方式
+        OLED_WriteByte(0X20, OLED_CMD); // 设置GDDRAM模式
+        OLED_WriteByte(0X00, OLED_CMD); // 水平寻址模式
+
+        OLED_WriteByte(0X21, OLED_CMD); // 设置列起始和结束地址
+        OLED_WriteByte(0X00, OLED_CMD); // 列起始地址 0
+        OLED_WriteByte(0X7F, OLED_CMD); // 列终止地址 127
+
+        OLED_WriteByte(0X22, OLED_CMD); // 设置页起始和结束地址
+        OLED_WriteByte(0X00, OLED_CMD); // 页起始地址 0
+        OLED_WriteByte(0X07, OLED_CMD); // 页终止地址 7
+
+        // OLED_WriteByte(0x8D, OLED_CMD); // 电荷泵使能
+        // OLED_WriteByte(0x14, OLED_CMD); // 开启电荷泵
+        // OLED_WriteByte(0xAF, OLED_CMD); // 点亮屏幕
+
+        uint8_t *puc;
+        uint16_t i;
+        puc = &g_ucaOledRam[0][0];
+
+        for (i = 0; i < 1024; i++)
         {
-            log("设备0x3D的ID寄存器值: 0x%02X\r\n", device_id);
+            *puc++ = 0xFF;
         }
     }
 
     while (1)
     {
-        // 主循环
-        HAL_Delay(1000);
+        HAL_I2C_Mem_Write(&I2cHandle, 0x7A, 0x40, I2C_MEMADD_SIZE_8BIT, &g_ucaOledRam[0][0], 1024, 200);
     }
 }
