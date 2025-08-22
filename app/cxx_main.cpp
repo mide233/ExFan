@@ -8,7 +8,11 @@
 
 #ifdef RUN_TEST
 #include "test.hpp"
-#define RUN_TEST_FUNC() run_test();
+#define RUN_TEST_FUNC() \
+    run_test();         \
+    while (1)           \
+    {                   \
+    }
 #else
 #define RUN_TEST_FUNC() __asm("nop");
 #endif
@@ -33,14 +37,14 @@ void CppMain()
 
     int test_i = 0;
 
+    RUN_TEST_FUNC();
+
     ssd1315_iic_init(SSD1315_INTERFACE_IIC, SSD1315_ADDR_SA0_1);
 
     ssd1315_set_display(&OledHandle, SSD1315_DISPLAY_ON);
     ssd1315_set_contrast(&OledHandle, 0x1F);
 
     // ssd1315
-
-    RUN_TEST_FUNC();
 
     while (1)
     {

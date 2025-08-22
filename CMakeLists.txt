@@ -133,6 +133,9 @@ file(GLOB_RECURSE SOURCES
     "app/*.hpp"
     "driver/*.c"
     "driver/*.cpp"
+
+    # UI CODE
+    "ui/*.*"
 )
 
 # 链接参数
@@ -144,8 +147,8 @@ add_link_options(-mcpu=cortex-m0 -mthumb -mthumb-interwork)
 add_link_options(-T ${LINKER_SCRIPT})
 
 # optimizations (-O0 -O1 -O2 -O3 -Os -Ofast -Og -flto)
-set(CMAKE_C_FLAGS_DEBUG "-O0 -g -DDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+set(CMAKE_C_FLAGS_DEBUG "-Og -g -DDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
 set(CMAKE_C_FLAGS_RELEASE "-Os -flto")
 set(CMAKE_CXX_FLAGS_RELEASE "-Os -flto")
 
