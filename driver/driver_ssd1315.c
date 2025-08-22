@@ -352,41 +352,15 @@ uint8_t ssd1315_clear_by_color(ssd1315_handle_t *handle, uint8_t color, uint8_t 
         return 3; /* return error */
     }
 
-    for (i = 0; i < 8; i++) /* write 8 page */
+    memset(handle->gram, color == 0 ? 0x00 : 0xFF, sizeof(handle->gram)); /* clear gram */
+
+    if (update_after_clear)
     {
-        if (update_after_clear)
+        if (ssd1315_gram_update(handle) != 0) /* update gram */
         {
-            if (a_ssd1315_write_byte(handle, SSD1315_CMD_PAGE_ADDR + i, SSD1315_CMD) != 0) /* set page */
-            {
-                handle->debug_print("ssd1315: write byte failed.\n"); /* write byte failed */
+            handle->debug_print("ssd1315: update gram failed.\n"); /* update gram failed */
 
-                return 1; /* return error */
-            }
-            if (a_ssd1315_write_byte(handle, SSD1315_CMD_LOWER_COLUMN_START_ADDRESS, SSD1315_CMD) != 0) /* set lower column 0 */
-            {
-                handle->debug_print("ssd1315: write byte failed.\n"); /* write byte failed */
-
-                return 1; /* return error */
-            }
-            if (a_ssd1315_write_byte(handle, SSD1315_CMD_HIGHER_COLUMN_START_ADDRESS, SSD1315_CMD) != 0) /* set higher column 0 */
-            {
-                handle->debug_print("ssd1315: write byte failed.\n"); /* write byte failed */
-
-                return 1; /* return error */
-            }
-        }
-        for (n = 0; n < 128; n++) /* write 128 */
-        {
-            handle->gram[n][i] = color; /* set black */
-            if (update_after_clear)
-            {
-                if (a_ssd1315_write_byte(handle, handle->gram[n][i], SSD1315_DATA) != 0) /* write data */
-                {
-                    handle->debug_print("ssd1315: write byte failed.\n"); /* write byte failed */
-
-                    return 1; /* return error */
-                }
-            }
+            return 1; /* return error */
         }
     }
 
@@ -418,133 +392,6 @@ uint8_t ssd1315_gram_update(ssd1315_handle_t *handle)
     }
 
     ssd1315_write_data(handle, &handle->gram[0][0], 1024);
-
-    return 0; /* success return 0 */
-}
-
-/**
- * @brief     write a point
- * @param[in] *handle pointer to an ssd1315 handle structure
- * @param[in] x coordinate x
- * @param[in] y coordinate y
- * @param[in] data written data
- * @return    status code
- *            - 0 success
- *            - 1 write point failed
- *            - 2 handle is NULL
- *            - 3 handle is not initialized
- *            - 4 x or y is invalid
- * @note      none
- */
-uint8_t ssd1315_write_point(ssd1315_handle_t *handle, uint8_t x, uint8_t y, uint8_t data)
-{
-    uint8_t pos;
-    uint8_t bx;
-    uint8_t temp = 0;
-
-    if (handle == NULL) /* check handle */
-    {
-        return 2; /* return error */
-    }
-    if (handle->inited != 1) /* check handle initialization */
-    {
-        return 3; /* return error */
-    }
-    if ((x > 127) || (y > 63)) /* check x, y */
-    {
-        handle->debug_print("ssd1315: x or y is invalid.\n"); /* x or y is invalid */
-
-        return 4; /* return error */
-    }
-
-    pos = y / 8;    /* get y page */
-    bx = y % 8;     /* get y point */
-    temp = 1 << bx; /* set data */
-    if (data != 0)  /* check the data */
-    {
-        handle->gram[x][pos] |= temp; /* set 1 */
-    }
-    else
-    {
-        handle->gram[x][pos] &= ~temp; /* set 0 */
-    }
-    if (a_ssd1315_write_byte(handle, SSD1315_CMD_PAGE_ADDR + pos, SSD1315_CMD) != 0) /* write page addr */
-    {
-        handle->debug_print("ssd1315: write byte failed.\n"); /* write byte failed */
-
-        return 1; /* return error */
-    }
-    if (a_ssd1315_write_byte(handle, SSD1315_CMD_LOWER_COLUMN_START_ADDRESS | (x & 0x0F), SSD1315_CMD) != 0) /* write lower column */
-    {
-        handle->debug_print("ssd1315: write byte failed.\n"); /* write byte failed */
-
-        return 1; /* return error */
-    }
-    if (a_ssd1315_write_byte(handle, SSD1315_CMD_HIGHER_COLUMN_START_ADDRESS | ((x > 4) & 0x0F),
-                             SSD1315_CMD) != 0) /* write higher column */
-    {
-        handle->debug_print("ssd1315: write byte failed.\n"); /* write byte failed */
-
-        return 1; /* return error */
-    }
-    if (a_ssd1315_write_byte(handle, handle->gram[x][pos], SSD1315_DATA) != 0) /* write data */
-    {
-        handle->debug_print("ssd1315: write byte failed.\n"); /* write byte failed */
-
-        return 1; /* return error */
-    }
-    else
-    {
-        return 0; /* success return 0 */
-    }
-}
-
-/**
- * @brief      read a point
- * @param[in]  *handle pointer to an ssd1315 handle structure
- * @param[in]  x coordinate x
- * @param[in]  y coordinate y
- * @param[out] *data pointer to a data buffer
- * @return     status code
- *             - 0 success
- *             - 1 read point failed
- *             - 2 handle is NULL
- *             - 3 handle is not initialized
- *             - 4 x or y is invalid
- * @note       none
- */
-uint8_t ssd1315_read_point(ssd1315_handle_t *handle, uint8_t x, uint8_t y, uint8_t *data)
-{
-    uint8_t pos;
-    uint8_t bx;
-    uint8_t temp = 0;
-
-    if (handle == NULL) /* check handle */
-    {
-        return 2; /* return error */
-    }
-    if (handle->inited != 1) /* check handle initialization */
-    {
-        return 3; /* return error */
-    }
-    if ((x > 127) || (y > 63)) /* check x, y */
-    {
-        handle->debug_print("ssd1315: x or y is invalid.\n"); /* x or y is invalid */
-
-        return 4; /* return error */
-    }
-
-    pos = y / 8;                            /* get y page */
-    bx = y % 8;                             /* get y point */
-    temp = 1 << bx;                         /* set data */
-    if ((handle->gram[x][pos] & temp) != 0) /* get data */
-    {
-        *data = 1; /* set 1 */
-    }
-    else
-    {
-        *data = 0; /* set 0 */
-    }
 
     return 0; /* success return 0 */
 }

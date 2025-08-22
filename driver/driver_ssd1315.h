@@ -541,38 +541,6 @@ extern "C"
     uint8_t ssd1315_gram_update(ssd1315_handle_t *handle);
 
     /**
-     * @brief     write a point
-     * @param[in] *handle pointer to an ssd1315 handle structure
-     * @param[in] x coordinate x
-     * @param[in] y coordinate y
-     * @param[in] data written data
-     * @return    status code
-     *            - 0 success
-     *            - 1 write point failed
-     *            - 2 handle is NULL
-     *            - 3 handle is not initialized
-     *            - 4 x or y is invalid
-     * @note      none
-     */
-    uint8_t ssd1315_write_point(ssd1315_handle_t *handle, uint8_t x, uint8_t y, uint8_t data);
-
-    /**
-     * @brief      read a point
-     * @param[in]  *handle pointer to an ssd1315 handle structure
-     * @param[in]  x coordinate x
-     * @param[in]  y coordinate y
-     * @param[out] *data pointer to a data buffer
-     * @return     status code
-     *             - 0 success
-     *             - 1 read point failed
-     *             - 2 handle is NULL
-     *             - 3 handle is not initialized
-     *             - 4 x or y is invalid
-     * @note       none
-     */
-    uint8_t ssd1315_read_point(ssd1315_handle_t *handle, uint8_t x, uint8_t y, uint8_t *data);
-
-    /**
      * @brief     write a point in the gram
      * @param[in] *handle pointer to an ssd1315 handle structure
      * @param[in] x coordinate x
