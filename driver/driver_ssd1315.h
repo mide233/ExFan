@@ -1304,7 +1304,7 @@ extern "C"
      *            - 3 handle is not initialized
      * @note      none
      */
-    uint8_t ssd1315_write_data(ssd1315_handle_t *handle, uint8_t *buf, uint8_t len);
+    uint8_t ssd1315_write_data(ssd1315_handle_t *handle, uint8_t *buf, uint16_t len);
 
     /**
      * @}

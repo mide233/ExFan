@@ -171,7 +171,7 @@ static uint8_t a_ssd1315_write_byte(ssd1315_handle_t *handle, uint8_t data, uint
  *            - 1 write failed
  * @note      none
  */
-static uint8_t a_ssd1315_multiple_write_byte(ssd1315_handle_t *handle, uint8_t *data, uint8_t len, uint8_t cmd)
+static uint8_t a_ssd1315_multiple_write_byte(ssd1315_handle_t *handle, uint8_t *data, uint16_t len, uint8_t cmd)
 {
     uint8_t res;
 
@@ -394,7 +394,7 @@ uint8_t ssd1315_clear_by_color(ssd1315_handle_t *handle, uint8_t color, uint8_t 
 }
 
 /**
- * @brief     update the gram data
+ * @brief     update the gram data * AT ONCE *
  * @param[in] *handle pointer to an ssd1315 handle structure
  * @return    status code
  *            - 0 success
@@ -417,36 +417,7 @@ uint8_t ssd1315_gram_update(ssd1315_handle_t *handle)
         return 3; /* return error */
     }
 
-    for (i = 0; i < 8; i++) /* write 8 page */
-    {
-        if (a_ssd1315_write_byte(handle, SSD1315_CMD_PAGE_ADDR + i, SSD1315_CMD) != 0) /* set page */
-        {
-            handle->debug_print("ssd1315: write byte failed.\n"); /* write byte failed */
-
-            return 1; /* return error */
-        }
-        if (a_ssd1315_write_byte(handle, SSD1315_CMD_LOWER_COLUMN_START_ADDRESS, SSD1315_CMD) != 0) /* set lower column 0 */
-        {
-            handle->debug_print("ssd1315: write byte failed.\n"); /* write byte failed */
-
-            return 1; /* return error */
-        }
-        if (a_ssd1315_write_byte(handle, SSD1315_CMD_HIGHER_COLUMN_START_ADDRESS, SSD1315_CMD) != 0) /* set higher column 0 */
-        {
-            handle->debug_print("ssd1315: write byte failed.\n"); /* write byte failed */
-
-            return 1; /* return error */
-        }
-        for (n = 0; n < 128; n++) /* write 128 */
-        {
-            if (a_ssd1315_write_byte(handle, handle->gram[n][i], SSD1315_DATA) != 0) /* write data */
-            {
-                handle->debug_print("ssd1315: write byte failed.\n"); /* write byte failed */
-
-                return 1; /* return error */
-            }
-        }
-    }
+    ssd1315_write_data(handle, &handle->gram[0][0], 1024);
 
     return 0; /* success return 0 */
 }
@@ -734,7 +705,6 @@ uint8_t ssd1315_gram_write_string(ssd1315_handle_t *handle, uint8_t x, uint8_t y
 
     return 0; /* success return 0 */
 }
-
 
 /**
  * @brief     draw a picture in the gram
@@ -2919,7 +2889,7 @@ uint8_t ssd1315_write_cmd(ssd1315_handle_t *handle, uint8_t *buf, uint8_t len)
  *            - 3 handle is not initialized
  * @note      none
  */
-uint8_t ssd1315_write_data(ssd1315_handle_t *handle, uint8_t *buf, uint8_t len)
+uint8_t ssd1315_write_data(ssd1315_handle_t *handle, uint8_t *buf, uint16_t len)
 {
     if (handle == NULL) /* check handle */
     {

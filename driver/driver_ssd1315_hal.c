@@ -139,8 +139,6 @@ uint8_t ssd1315_interface_reset_gpio_write(uint8_t value)
 
 uint8_t ssd1315_iic_init(ssd1315_interface_t interface, ssd1315_address_t addr)
 {
-    uint8_t res;
-
     /* link functions */
     DRIVER_SSD1315_LINK_INIT(&OledHandle, ssd1315_handle_t);
     DRIVER_SSD1315_LINK_IIC_INIT(&OledHandle, ssd1315_interface_iic_init);
@@ -152,6 +150,7 @@ uint8_t ssd1315_iic_init(ssd1315_interface_t interface, ssd1315_address_t addr)
     DRIVER_SSD1315_LINK_DELAY_MS(&OledHandle, ssd1315_interface_delay_ms);
     DRIVER_SSD1315_LINK_DEBUG_PRINT(&OledHandle, ssd1315_interface_debug_print);
 
+    uint8_t res;
     /* set interface */
     res = ssd1315_set_interface(&OledHandle, interface);
     if (res != 0)
@@ -179,254 +178,66 @@ uint8_t ssd1315_iic_init(ssd1315_interface_t interface, ssd1315_address_t addr)
         return 1;
     }
 
-    /* close display */
-    res = ssd1315_set_display(&OledHandle, SSD1315_DISPLAY_OFF);
-    if (res != 0)
+    const uint8_t SSD1306_Init_Array[] = {
+        0xAE, // 0xAE, Display OFF (sleep mode)
+        0x00, //---set low column address
+        0x10, //---set high column address
+        0x81,
+        0X3F, // set contrast control register, 2 bytes, 0x00 - 0xFF
+        0xA4, // Output follows RAM content
+        0xA6, // Normal display (RESET)
+        0x20, // Set Memory Addressing Mode, 2 bytes
+        0x01, // Horizontal Addressing Mode (slide horizontally and goto next page)
+        0xB0, // Set Page Address, 3 bytes,For Horizontal and Vertical Addressing Mode only
+        0x22,
+        0x00, // From Page 0
+        0x07, // To Page 7
+        /**
+         * COM Output Scan Direction
+         * 0xC0: normal mode (RESET) Scan from COM0 to COM[N –1]
+         * 0xC8: remapped mode. Scan from COM[N-1] to COM0 */
+        0xC8, // Set COM Output Scan Direction
+        /**
+         * Set display RAM display start line register from 0-63 */
+        0x40,
+        /**
+         * Segment Re-map
+         * 0xA0: column address 0 is mapped to SEG0 (RESET),
+         * 0xA1: column address 127 is mapped to SEG0 */
+        0xA1,
+        /**
+         * Set MUX ratio to N+1 MUX
+         * N=A[5:0]: from 16MUX to 64MUX, RESET=111111b (i.e. 63d, 64MUX)
+         * A[5:0] from 0 to 14 are invalid entry.*/
+        0xA8,
+        0x3F,
+        /**
+         * Set Display Offset, Set vertical shift by COM from 0d~63d
+         * The value is reset to 00h after RESET */
+        0xD3,
+        0x00, // offset in vertical
+        /**
+         * Set COM Pins Hardware Configuration
+         * A[4]=0b, Sequential COM pin configuration
+         * A[4]=1b(RESET), Alternative COM pin configuration
+         * A[5]=0b(RESET), Disable COM Left/Right remap
+         * A[5]=1b, Enable COM Left/Right remap */
+        0xDA,
+        0x12, // A[4]=0, A[5]=1
+        0xD5, // Set Display Divide Ratio/Oscillator Frequency
+        0xF0, // divide ratio
+        0xD9, // Set Pre-charge Period
+        0x22,
+        0xDB, // Set V COMH Deselect Level
+        0x10, // 0.77 * Vcc (RESET)
+        0x8D, // charge pump setting
+        0x14, // Enable charge pump during display on
+        0xAF  // Display ON in normal mode
+    };
+
+    for (uint8_t i = 0; i < sizeof(SSD1306_Init_Array) / sizeof(uint8_t); i++)
     {
-        ssd1315_interface_debug_print("ssd1315: set display failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set column address range */
-    res = ssd1315_set_column_address_range(&OledHandle, SSD1315_BASIC_DEFAULT_COLUMN_ADDRESS_RANGE_START, SSD1315_BASIC_DEFAULT_COLUMN_ADDRESS_RANGE_END);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set column address range failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set page address range */
-    res = ssd1315_set_page_address_range(&OledHandle, SSD1315_BASIC_DEFAULT_PAGE_ADDRESS_RANGE_START, SSD1315_BASIC_DEFAULT_PAGE_ADDRESS_RANGE_END);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set page address range failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set low column start address */
-    res = ssd1315_set_low_column_start_address(&OledHandle, SSD1315_BASIC_DEFAULT_LOW_COLUMN_START_ADDRESS);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set low column start address failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set high column start address */
-    res = ssd1315_set_high_column_start_address(&OledHandle, SSD1315_BASIC_DEFAULT_HIGH_COLUMN_START_ADDRESS);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set high column start address failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set display start line */
-    res = ssd1315_set_display_start_line(&OledHandle, SSD1315_BASIC_DEFAULT_DISPLAY_START_LINE);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set display start line failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set fade blinking mode */
-    res = ssd1315_set_fade_blinking_mode(&OledHandle, SSD1315_BASIC_DEFAULT_FADE_BLINKING_MODE, SSD1315_BASIC_DEFAULT_FADE_FRAMES);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set fade blinking failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* deactivate scroll */
-    res = ssd1315_deactivate_scroll(&OledHandle);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set deactivate scroll failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set zoom in */
-    res = ssd1315_set_zoom_in(&OledHandle, SSD1315_BASIC_DEFAULT_ZOOM_IN);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set set zoom in failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set contrast */
-    res = ssd1315_set_contrast(&OledHandle, SSD1315_BASIC_DEFAULT_CONTRAST);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set contrast failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set segment remap */
-    res = ssd1315_set_segment_remap(&OledHandle, SSD1315_BASIC_DEFAULT_SEGMENT);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set segment remap failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set scan direction */
-    res = ssd1315_set_scan_direction(&OledHandle, SSD1315_BASIC_DEFAULT_SCAN_DIRECTION);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set scan direction failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set display mode */
-    res = ssd1315_set_display_mode(&OledHandle, SSD1315_BASIC_DEFAULT_DISPLAY_MODE);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set display mode failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set multiplex ratio */
-    res = ssd1315_set_multiplex_ratio(&OledHandle, SSD1315_BASIC_DEFAULT_MULTIPLEX_RATIO);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set multiplex ratio failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set display offset */
-    res = ssd1315_set_display_offset(&OledHandle, SSD1315_BASIC_DEFAULT_DISPLAY_OFFSET);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set display offset failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set display clock */
-    res = ssd1315_set_display_clock(&OledHandle, SSD1315_BASIC_DEFAULT_OSCILLATOR_FREQUENCY, SSD1315_BASIC_DEFAULT_CLOCK_DIVIDE);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set display clock failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set pre charge period */
-    res = ssd1315_set_precharge_period(&OledHandle, SSD1315_BASIC_DEFAULT_PHASE1_PERIOD, SSD1315_BASIC_DEFAULT_PHASE2_PERIOD);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set pre charge period failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set iref */
-    res = ssd1315_set_iref(&OledHandle, SSD1315_BASIC_DEFAULT_IREF, SSD1315_BASIC_DEFAULT_IREF_VALUE);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set iref failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set hardware pins conf */
-    res = ssd1315_set_com_pins_hardware_conf(&OledHandle, SSD1315_BASIC_DEFAULT_PIN_CONF, SSD1315_BASIC_DEFAULT_LEFT_RIGHT_REMAP);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set com pins hardware conf failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set deselect level 0.77 */
-    res = ssd1315_set_deselect_level(&OledHandle, SSD1315_BASIC_DEFAULT_DESELECT_LEVEL);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set deselect level failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* set page memory addressing mode */
-    res = ssd1315_set_memory_addressing_mode(&OledHandle, SSD1315_MEMORY_ADDRESSING_MODE_PAGE);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set memory addressing level failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* enable charge pump */
-    res = ssd1315_set_charge_pump(&OledHandle, SSD1315_CHARGE_PUMP_ENABLE, SSD1315_CHARGE_PUMP_MODE_7P5V);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set charge pump failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* entire display off */
-    res = ssd1315_set_entire_display(&OledHandle, SSD1315_ENTIRE_DISPLAY_OFF);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set entire display failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* enable display */
-    res = ssd1315_set_display(&OledHandle, SSD1315_DISPLAY_ON);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: set display failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
-    }
-
-    /* clear screen */
-    res = ssd1315_clear(&OledHandle);
-    if (res != 0)
-    {
-        ssd1315_interface_debug_print("ssd1315: clear failed.\n");
-        (void)ssd1315_deinit(&OledHandle);
-
-        return 1;
+        ssd1315_write_cmd(&OledHandle, (uint8_t *)&SSD1306_Init_Array[i], 1);
     }
 
     return 0;

@@ -47,11 +47,11 @@ extern "C"
 #define SSD1315_BASIC_DEFAULT_DESELECT_LEVEL SSD1315_DESELECT_LEVEL_0P77            /**< set deselect level 0.77 */
 #define SSD1315_BASIC_DEFAULT_LEFT_RIGHT_REMAP SSD1315_LEFT_RIGHT_REMAP_DISABLE     /**< disable remap */
 #define SSD1315_BASIC_DEFAULT_PIN_CONF SSD1315_PIN_CONF_ALTERNATIVE                 /**< set alternative */
-#define SSD1315_BASIC_DEFAULT_PHASE1_PERIOD 0x01                                    /**< set phase 1 */
-#define SSD1315_BASIC_DEFAULT_PHASE2_PERIOD 0x0F                                    /**< set phase F */
+#define SSD1315_BASIC_DEFAULT_PHASE1_PERIOD 0x02                                    /**< set phase 1 */
+#define SSD1315_BASIC_DEFAULT_PHASE2_PERIOD 0x0E                                    /**< set phase F */
 #define SSD1315_BASIC_DEFAULT_IREF SSD1315_IREF_ENABLE                              /**< enable */
 #define SSD1315_BASIC_DEFAULT_IREF_VALUE SSD1315_IREF_VALUE_19UA_150UA              /**< internal iref setting: 19uA, output maximum iseg 150uA */
-#define SSD1315_BASIC_DEFAULT_OSCILLATOR_FREQUENCY 0x08                             /**< set 8 */
+#define SSD1315_BASIC_DEFAULT_OSCILLATOR_FREQUENCY 0x0F                             /**< set 8 */
 #define SSD1315_BASIC_DEFAULT_CLOCK_DIVIDE 0x00                                     /**< set clock div 0 */
 #define SSD1315_BASIC_DEFAULT_DISPLAY_OFFSET 0x00                                   /**< set display offset */
 #define SSD1315_BASIC_DEFAULT_MULTIPLEX_RATIO 0x3F                                  /**< set ratio */

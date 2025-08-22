@@ -90,7 +90,7 @@ extern "C"
  *        (when HSI is used as system clock source, directly or through the PLL).
  */
 #if !defined(HSI_VALUE)
-#define HSI_VALUE 8000000U /*!< Value of the Internal oscillator in Hz*/
+#define HSI_VALUE 24000000U /*!< Value of the Internal oscillator in Hz*/
 #endif                     /* HSI_VALUE */
 
 /**
