@@ -42,7 +42,7 @@ void CppMain()
         // test_val = key_status;
         ssd1315_clear_by_color(&OledHandle, 0x00, 0);
         char str[32];
-        sprintf(str, "V: %d", key_status);
+        sprintf(str, "V: %d/%d/%d", key_status, key_info_arr[0].key_pressing, key_info_arr[0].key_last_press);
 
         ssd1315_gram_write_string(&OledHandle, 0, 0, str, 12, 0xFF, SSD1315_FONT_16);
 

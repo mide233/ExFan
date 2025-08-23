@@ -8,13 +8,13 @@ key_info_t key_info_arr[5] = {
     {0, 0}, // CLICK
 };
 
-int8_t key_status = -1; // 00n = press; 10n = long press; 20n = double click
+int8_t key_status = -1; // 00n = press; 10n = long press; 20n = double click(* disabled)
 
 void key_handler_update(void)
 {
     for (int i = 0; i < 5; i++)
     {
-        if (key_info_arr[i].key_pressing > 0)
+        if (key_info_arr[i].key_pressing != 0)
         {
             key_info_arr[i].key_pressing += key_info_arr[i].key_pressing >= 127 ? 0 : 1;
             key_info_arr[i].key_last_press = -abs(key_info_arr[i].key_last_press);
@@ -29,7 +29,7 @@ void key_handler_update(void)
 
             if (key_status != -1)
             {
-                if (key_status % 100 == i && key_info_arr[i].key_last_press > 64)
+                if (key_status % 10 == i && key_info_arr[i].key_last_press > 64)
                 {
                     key_status = -1;
                 }
@@ -42,25 +42,30 @@ void button_it_handler(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, uint8_t index)
 {
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_Pin))
     {
-        if (HAL_GPIO_ReadPin(GPIOx, GPIO_Pin) == GPIO_PIN_SET)
+        if (abs(key_info_arr[index].key_last_press) > 1)
         {
-            key_info_arr[index].key_pressing = 1;
-        }
-        else
-        {
-            if (key_info_arr[index].key_last_press < 0 && key_info_arr[index].key_last_press > -20)
+            if (HAL_GPIO_ReadPin(GPIOx, GPIO_Pin) == GPIO_PIN_SET)
             {
-                key_status = 20 + index; // Set double click status
-            }
-            else if (key_info_arr[index].key_pressing > 18)
-            {
-                key_status = 10 + index; // Set long press status
+                if (key_info_arr[index].key_pressing == 0)
+                {
+                    key_info_arr[index].key_pressing = 1;
+                }
             }
             else
             {
-                key_status = index;
+                if (key_info_arr[index].key_pressing != 0)
+                {
+                    if (key_info_arr[index].key_pressing > 10)
+                    {
+                        key_status = 10 + index; // Set long press status
+                    }
+                    else
+                    {
+                        key_status = index;
+                    }
+                    key_info_arr[index].key_pressing = 0;
+                }
             }
-            key_info_arr[index].key_pressing = 0;
         }
 
         __HAL_GPIO_EXTI_CLEAR_IT(GPIO_Pin);
