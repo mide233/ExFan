@@ -48,7 +48,7 @@ extern "C"
 #define HAL_DMA_MODULE_ENABLED
 #define HAL_FLASH_MODULE_ENABLED
 #define HAL_GPIO_MODULE_ENABLED
-// #define HAL_EXTI_MODULE_ENABLED
+#define HAL_EXTI_MODULE_ENABLED
 #define HAL_I2C_MODULE_ENABLED
 // #define HAL_I2S_MODULE_ENABLED
 // #define HAL_IRDA_MODULE_ENABLED
@@ -91,7 +91,7 @@ extern "C"
  */
 #if !defined(HSI_VALUE)
 #define HSI_VALUE 24000000U /*!< Value of the Internal oscillator in Hz*/
-#endif                     /* HSI_VALUE */
+#endif                      /* HSI_VALUE */
 
 /**
  * @brief In the following line adjust the Internal High Speed oscillator (HSI) Startup

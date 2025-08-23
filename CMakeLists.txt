@@ -46,6 +46,7 @@ include_directories(
     "driver"
     "os"
     "os/pt-1.4"
+    "ui"
 )
 
 # 源码文件

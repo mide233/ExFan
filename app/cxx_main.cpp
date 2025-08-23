@@ -19,21 +19,11 @@
 
 I2C_HandleTypeDef I2cHandle;
 ssd1315_handle_t OledHandle;
+uint16_t test_val = 0;
 
 // 主程序入口
 void CppMain()
 {
-    HAL_Init();
-    SystemClockConfig();
-
-    I2cHandle.Instance = I2C;                                 /* I2C */
-    I2cHandle.Init.ClockSpeed = I2C_SPEEDCLOCK;               /* I2C通讯速度 */
-    I2cHandle.Init.DutyCycle = I2C_DUTYCYCLE;                 /* I2C占空比 */
-    I2cHandle.Init.OwnAddress1 = I2C_ADDRESS;                 /* I2C地址 */
-    I2cHandle.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE; /* 禁止广播呼叫 */
-    I2cHandle.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;     /* 允许时钟延长 */
-    if (HAL_I2C_Init(&I2cHandle) != HAL_OK)
-        Error_Handler();
 
     int test_i = 0;
 
@@ -49,9 +39,10 @@ void CppMain()
     while (1)
     {
         test_i += 5;
+        // test_val = key_status;
         ssd1315_clear_by_color(&OledHandle, 0x00, 0);
         char str[32];
-        sprintf(str, "Value: %d", HAL_RCC_GetSysClockFreq());
+        sprintf(str, "V: %d", key_status);
 
         ssd1315_gram_write_string(&OledHandle, 0, 0, str, 12, 0xFF, SSD1315_FONT_16);
 
@@ -63,47 +54,6 @@ void CppMain()
         // ssd1315_gram_write_point(&OledHandle, 0, 0, 0x0);
 
         ssd1315_gram_update(&OledHandle);
+        key_handler_update();
     }
-}
-
-void SystemClockConfig(void)
-{
-    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-
-    /* 配置振荡器 */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-    RCC_OscInitStruct.HSIState = RCC_HSI_ON;                          /* 启用HSI */
-    RCC_OscInitStruct.HSIDiv = RCC_HSI_DIV1;                          /* HSI不分频 */
-    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_24MHz; /* HSI校准频率24MHz */
-    RCC_OscInitStruct.HSEState = RCC_HSE_OFF;                         /* 关闭HSE */
-    RCC_OscInitStruct.LSIState = RCC_LSI_OFF;                         /* 关闭LSI */
-    RCC_OscInitStruct.LSEState = RCC_LSE_OFF;                         /* 关闭LSE */
-    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;                      /* 启用PLL */
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;              /* 使用HSI作为PLL输入源 */
-
-    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-        Error_Handler();
-
-    /* 配置系统时钟 */
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1;
-    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK; /* 配置HSI作为系统时钟源 */
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;        /* AHB时钟不分频 */
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;         /* APB1时钟不分频 */
-
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
-        Error_Handler();
-
-    /* 配置SysTick为1ms中断 */
-    if (HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000) != HAL_OK)
-        Error_Handler();
-
-    /* 配置SysTick中断优先级 */
-    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
-}
-
-void Error_Handler(void)
-{
-    while (1)
-        __asm("nop");
 }

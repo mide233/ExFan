@@ -1,6 +1,8 @@
 {
     "files.associations": {
-        "cxx_main.h": "c"
+        "cxx_main.h": "c",
+        "air001xx_hal_gpio.h": "c",
+        "air001xx_hal_dma.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
