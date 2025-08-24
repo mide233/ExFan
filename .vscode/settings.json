@@ -2,7 +2,9 @@
     "files.associations": {
         "cxx_main.h": "c",
         "air001xx_hal_gpio.h": "c",
-        "air001xx_hal_dma.h": "c"
+        "air001xx_hal_dma.h": "c",
+        "key_handler.h": "c",
+        "stdlib.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

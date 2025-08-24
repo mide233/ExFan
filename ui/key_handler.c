@@ -1,39 +1,17 @@
 #include "key_handler.h"
 
-key_info_t key_info_arr[5] = {
-    {0, 0}, // UP
-    {0, 0}, // DOWN
-    {0, 0}, // LEFT
-    {0, 0}, // RIGHT
-    {0, 0}, // CLICK
-};
-
 int8_t key_status = -1; // 00n = press; 10n = long press; 20n = double click(* disabled)
+
+uint32_t key_timer = 0;
+int8_t key_info_arr[5] = {0, 0, 0, 0, 0}; // U D L R C
 
 void key_handler_update(void)
 {
-    for (int i = 0; i < 5; i++)
+    for (uint8_t i = 0; i < 5; i++)
     {
-        if (key_info_arr[i].key_pressing != 0)
+        if (key_info_arr[i] <= -1 && key_info_arr[i] >= -126)
         {
-            key_info_arr[i].key_pressing += key_info_arr[i].key_pressing >= 127 ? 0 : 1;
-            key_info_arr[i].key_last_press = -abs(key_info_arr[i].key_last_press);
-        }
-        else
-        {
-            if (key_info_arr[i].key_last_press < 0)
-            {
-                key_info_arr[i].key_last_press = 0;
-            }
-            key_info_arr[i].key_last_press += key_info_arr[i].key_last_press >= 127 ? 0 : 1;
-
-            if (key_status != -1)
-            {
-                if (key_status % 10 == i && key_info_arr[i].key_last_press > 64)
-                {
-                    key_status = -1;
-                }
-            }
+            key_info_arr[i]--;
         }
     }
 }
@@ -42,28 +20,30 @@ void button_it_handler(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, uint8_t index)
 {
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_Pin))
     {
-        if (abs(key_info_arr[index].key_last_press) > 1)
+        if (HAL_GPIO_ReadPin(GPIOx, GPIO_Pin) == GPIO_PIN_SET)
         {
-            if (HAL_GPIO_ReadPin(GPIOx, GPIO_Pin) == GPIO_PIN_SET)
+            if (key_info_arr[index] >= 0)
             {
-                if (key_info_arr[index].key_pressing == 0)
-                {
-                    key_info_arr[index].key_pressing = 1;
-                }
+                key_info_arr[index] = -1;
+                key_timer = HAL_GetTick() / 10;
             }
-            else
+        }
+        else
+        {
+            for (uint8_t i = 0; i < 5; i++)
             {
-                if (key_info_arr[index].key_pressing != 0)
+                if (key_info_arr[i] <= -1)
                 {
-                    if (key_info_arr[index].key_pressing > 10)
+                    key_info_arr[i] = min(127, (HAL_GetTick() / 10 - key_timer));
+
+                    if (key_info_arr[i] > 32)
                     {
-                        key_status = 10 + index; // Set long press status
+                        key_status = 10 + i;
                     }
-                    else
+                    else if (key_info_arr[i] >= 2)
                     {
-                        key_status = index;
+                        key_status = i;
                     }
-                    key_info_arr[index].key_pressing = 0;
                 }
             }
         }
@@ -75,13 +55,13 @@ void button_it_handler(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, uint8_t index)
 
 void EXTI0_1_IRQHandler(void)
 {
-    button_it_handler(GPIOB, GPIO_PIN_0, 2);
+    button_it_handler(GPIOB, GPIO_PIN_0, KEY_LEFT_INDEX);
 }
 
 void EXTI2_3_IRQHandler(void)
 {
-    button_it_handler(GPIOB, GPIO_PIN_2, 1);
-    button_it_handler(GPIOB, GPIO_PIN_3, 3);
+    button_it_handler(GPIOB, GPIO_PIN_2, KEY_DOWN_INDEX);
+    button_it_handler(GPIOB, GPIO_PIN_3, KEY_RIGHT_INDEX);
 }
 
 void EXTI4_15_IRQHandler(void)
@@ -92,6 +72,6 @@ void EXTI4_15_IRQHandler(void)
         __HAL_GPIO_EXTI_CLEAR_FLAG(GPIO_PIN_5);
         HAL_GPIO_EXTI_Callback(GPIO_PIN_5);
     }
-    button_it_handler(GPIOB, GPIO_PIN_6, 4); // LEFT
-    button_it_handler(GPIOA, GPIO_PIN_7, 0); // DOWN
+    button_it_handler(GPIOB, GPIO_PIN_6, KEY_CENTER_INDEX);
+    button_it_handler(GPIOA, GPIO_PIN_7, KEY_UP_INDEX);
 }
