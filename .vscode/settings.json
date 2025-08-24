@@ -4,7 +4,9 @@
         "air001xx_hal_gpio.h": "c",
         "air001xx_hal_dma.h": "c",
         "key_handler.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "sw6208.h": "c"
     },
-    "C_Cpp.errorSquiggles": "disabled"
+    "C_Cpp.errorSquiggles": "disabled",
+    "cortex-debug.variableUseNaturalFormat": true
 }

@@ -9,10 +9,6 @@ extern "C"
 #include <stdint.h>
 #include "cxx_main.h"
 
-#ifndef min
-#define min(a, b) (((a) < (b)) ? (a) : (b))
-#endif
-
 #define KEY_UP_INDEX 0
 #define KEY_DOWN_INDEX 1
 #define KEY_LEFT_INDEX 2

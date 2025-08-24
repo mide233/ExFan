@@ -1,7 +1,7 @@
-// test.h
+// cxx_main.h
 
-#ifndef __TEST_H_
-#define __TEST_H_
+#ifndef __CXX_MAIN_H_
+#define __CXX_MAIN_H_
 
 #ifdef __cplusplus
 extern "C"
@@ -12,10 +12,12 @@ extern "C"
 
 #include <sys/stat.h>
 #include <stdlib.h>
+#include <math.h>
 #include "air001xx_hal.h"
-#include "coroOS.h"
+#include "util.h"
 #include "driver_ssd1315.h"
 #include "driver_ssd1315_hal.h"
+#include "sw6208.h"
 
 #include "key_handler.h"
 

@@ -15,6 +15,12 @@ int main(void)
     if (HAL_I2C_Init(&I2cHandle) != HAL_OK)
         Error_Handler();
 
+    ssd1315_iic_init(SSD1315_INTERFACE_IIC, SSD1315_ADDR_SA0_1);
+    ssd1315_set_display(&OledHandle, SSD1315_DISPLAY_ON);
+    ssd1315_set_contrast(&OledHandle, 0x1F);
+
+    SW6208_Init();
+
     CppMain();
 
     while (1)

@@ -18,9 +18,12 @@
                 "_UNICODE",
                 "__STATIC_INLINE"
             ],
-            "compilerArgs": ["-fexec-charset=UTF8"],
+            "compilerArgs": [
+                "-fexec-charset=UTF8"
+            ],
             "cStandard": "c99",
-            "cppStandard": "c++11"
+            "cppStandard": "c++11",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4
