@@ -259,7 +259,6 @@ void SW6208_PortA2Insert(void)
 void SW6208_PortA1Remove(void)
 { // 触发A1口设备拔出事件
     SW6208_ByteWrite(SW6208_CTRG_PORTEVT, SW6208_PORTEVT_A1RMV);
-    SW6208_ByteWrite(SW6208_CTRG_PORTEVT, SW6208_PORTEVT_A1RMV);
 }
 void SW6208_PortA1Insert(void)
 { // 触发A1口设备插入事件

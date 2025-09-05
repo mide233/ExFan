@@ -15,12 +15,6 @@ extern "C"
 #define KEY_RIGHT_INDEX 3
 #define KEY_CENTER_INDEX 4
 
-    typedef struct
-    {
-        int8_t key_pressing;
-        int8_t key_last_press;
-    } key_info_t;
-
     extern int8_t key_info_arr[5];
     extern int8_t key_status;
     extern uint32_t key_timer;

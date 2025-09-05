@@ -15,5 +15,6 @@ void *_sbrk(ptrdiff_t incr) { return (void *)-1; }
 void GPIOInit(void);
 void SystemClockConfig(void);
 void Error_Handler(void);
+void TIMInit(void);
 
 #endif // AIR001_CMAKE_MAIN_H

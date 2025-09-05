@@ -12,7 +12,6 @@ extern "C"
 
 #include <sys/stat.h>
 #include <stdlib.h>
-#include <math.h>
 #include "air001xx_hal.h"
 #include "util.h"
 #include "driver_ssd1315.h"
@@ -23,7 +22,14 @@ extern "C"
 
     extern I2C_HandleTypeDef I2cHandle;
     extern ssd1315_handle_t OledHandle;
+
+    extern TIM_HandleTypeDef PwmTimHandle;
+    extern TIM_OC_InitTypeDef PwmTimConfig;
+    extern TIM_HandleTypeDef SpdMesTimHandle;
+    extern TIM_IC_InitTypeDef SpdMesTimConfig;
+
     extern uint16_t test_val;
+    extern uint16_t SpdA, SpdB;
 
     void CppMain(); // 主程序函数
 
