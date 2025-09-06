@@ -32,8 +32,8 @@ void ui_draw_status_bar(uint8_t y_position, float watt, uint8_t batt)
     ssd1315_gram_write_string(&OledHandle, 2, y_position, msg_buf, 8, SSD1315_COLOR_INVERSE, SSD1315_FONT_16);
     // clear buf
     memset(msg_buf, 0, 8);
-    mini_sprintf(msg_buf, "%d%%", batt);
-    ssd1315_gram_write_string(&OledHandle, 126 - (batt > 99 ? 8 * 4 : (batt > 9 ? 8 * 3 : 8 * 2)), y_position, msg_buf, 8, SSD1315_COLOR_INVERSE, SSD1315_FONT_16);
+    mini_sprintf(msg_buf, "%s%d%%", SW6208_IsCharging() ? "+" : "", batt);
+    ssd1315_gram_write_string(&OledHandle, 126 - (batt > 99 ? 8 * 4 : (batt > 9 ? 8 * 3 : 8 * 2)) - (SW6208_IsCharging() ? 8 : 0), y_position, msg_buf, 8, SSD1315_COLOR_INVERSE, SSD1315_FONT_16);
 }
 
 void ui_draw_control_bar(uint8_t y_position)
@@ -41,7 +41,7 @@ void ui_draw_control_bar(uint8_t y_position)
     if (y_position - 40 > 0 && y_position - 40 < 32)
     {
         uint8_t fan_duty_percent = PwmTimConfig.Pulse / 1800.0f * 100;
-        float fan_lock = (SW6208_ReadVBUS() > 7 ? 1 : (key_info_arr[4] < 0 ? (-(key_info_arr[4] < -12 ? -12 : key_info_arr[4]) / 12.0f) : 0));
+        float fan_lock = ((HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6) == GPIO_PIN_SET) ? 1 : (key_info_arr[4] < 0 ? (-(key_info_arr[4] < -12 ? -12 : key_info_arr[4]) / 12.0f) : 0));
 
         ssd1315_gram_draw_rframe(&OledHandle, 0, y_position - 40, 128, 32, 5);
         ssd1315_gram_draw_rframe(&OledHandle, 0, y_position - 40, 128 * fan_duty_percent / 100, 32, 5);
@@ -148,7 +148,7 @@ void CppMain()
                 {
                     if (PwmTimConfig.Pulse < 1800)
                         PwmTimConfig.Pulse += 50;
-                    if (SW6208_ReadVBUS() > 7)
+                    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6) == GPIO_PIN_SET)
                         applyPwmConf();
                 }
 
@@ -160,7 +160,7 @@ void CppMain()
                 {
                     if (PwmTimConfig.Pulse > 0)
                         PwmTimConfig.Pulse -= 50;
-                    if (SW6208_ReadVBUS() > 7)
+                    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6) == GPIO_PIN_SET)
                         applyPwmConf();
                 }
 
@@ -170,7 +170,7 @@ void CppMain()
                 key_status = -1;
                 if (page_index == 0)
                 {
-                    if (SW6208_ReadVBUS() > 7)
+                    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6) == GPIO_PIN_SET)
                     {
                         stopFan();
                     }
@@ -178,17 +178,17 @@ void CppMain()
                 break;
             case KEY_CENTER_LONG_PRESS_INDEX:
                 key_status = -1;
-                if (SW6208_ReadVBUS() < 7)
+                if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6) == GPIO_PIN_RESET)
                     startFan();
                 break;
             case KEY_LEFT_LONG_PRESS_INDEX:
                 key_status = -1;
-                if (SW6208_ReadVBUS() > 7)
+                if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6) == GPIO_PIN_SET)
                     applyPwmConf();
                 break;
             case KEY_RIGHT_LONG_PRESS_INDEX:
                 key_status = -1;
-                if (SW6208_ReadVBUS() > 7)
+                if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6) == GPIO_PIN_SET)
                     applyPwmConf();
                 break;
 
