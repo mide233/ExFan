@@ -13,6 +13,7 @@ extern "C"
 #include <sys/stat.h>
 #include <stdlib.h>
 #include "air001xx_hal.h"
+#include "str_res.h"
 #include "util.h"
 #include "driver_ssd1315.h"
 #include "driver_ssd1315_hal.h"

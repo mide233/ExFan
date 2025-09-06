@@ -13,6 +13,11 @@ extern "C"
 #endif
 
     char *float_to_str(float value);
+    float easeOutExpo(float x);
+
+    void applyPwmConf();
+    void startFan();
+    void stopFan();
 
 #ifdef __cplusplus
 }

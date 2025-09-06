@@ -1,0 +1,1 @@
+#define STR_TEST "TestStrgy 123%"
