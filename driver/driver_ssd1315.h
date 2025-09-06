@@ -419,6 +419,9 @@ extern "C"
  */
 #define DRIVER_SSD1315_LINK_DEBUG_PRINT(HANDLE, FUC) (HANDLE)->debug_print = FUC
 
+#define SSD1315_COLOR_BLACK 0     /**< black color */
+#define SSD1315_COLOR_WHITE 1     /**< white color */
+#define SSD1315_COLOR_INVERSE 100 /**< inverse color */
     /**
      * @}
      */
@@ -685,7 +688,7 @@ extern "C"
      *            - 3 handle is not initialized
      * @note      none
      */
-    uint8_t ssd1315_gram_draw_box(ssd1315_handle_t *handle, float x, float y, float w, float h);
+    uint8_t ssd1315_gram_draw_box(ssd1315_handle_t *handle, float x, float y, float w, float h, uint8_t color, float offset);
 
     /**
      * @brief     draw filled rounded box

@@ -36,7 +36,7 @@
 
 #include "driver_ssd1315.h"
 #include "driver_ssd1315_font.h"
-#include <math.h>
+#include "util.h"
 
 /**
  * @brief chip information definition
@@ -97,10 +97,6 @@
 #define SSD1315_CMD_COM_PINS_CONF 0xDA                    /**< command com pins conf */
 #define SSD1315_CMD_COMH_DESLECT_LEVEL 0xDB               /**< command comh deslect level */
 #define SSD1315_CMD_NOP 0xE3                              /**< command nop */
-
-#define SSD1315_COLOR_BLACK 0     /**< black color */
-#define SSD1315_COLOR_WHITE 1     /**< white color */
-#define SSD1315_COLOR_INVERSE 100 /**< inverse color */
 
 /**
  * @brief     write one byte
@@ -291,7 +287,7 @@ static uint8_t a_ssd1315_gram_show_char(ssd1315_handle_t *handle, uint8_t x, uin
     {
         if (size == 12) /* if size 12 */
         {
-            temp = gsc_ssd1315_ascii_1206[chr][t]; /* get ascii 1206 */
+            return 1; /* not support */
         }
         else if (size == 16) /* if size 16 */
         {
@@ -299,7 +295,7 @@ static uint8_t a_ssd1315_gram_show_char(ssd1315_handle_t *handle, uint8_t x, uin
         }
         else if (size == 24) /* if size 24 */
         {
-            temp = gsc_ssd1315_ascii_2412[chr][t]; /* get ascii 2412 */
+            return 1; /* not support */
         }
         else
         {
@@ -787,7 +783,7 @@ uint8_t ssd1315_gram_draw_hline(ssd1315_handle_t *handle, float x, float y, floa
  *            - 3 handle is not initialized
  * @note      none
  */
-uint8_t ssd1315_gram_draw_box(ssd1315_handle_t *handle, float x, float y, float w, float h)
+uint8_t ssd1315_gram_draw_box(ssd1315_handle_t *handle, float x, float y, float w, float h, uint8_t color, float offset)
 {
     uint8_t i, j;
     uint8_t x_int = (uint8_t)roundf(x);
@@ -808,11 +804,13 @@ uint8_t ssd1315_gram_draw_box(ssd1315_handle_t *handle, float x, float y, float 
     {
         for (j = 0; j < h_int; j++)
         {
-            if (a_ssd1315_gram_draw_point(handle, x_int + i, y_int + j, 1) != 0) /* draw point */
+            if (a_ssd1315_gram_draw_point(handle, x_int + j, y_int + i, color) != 0) /* draw point */
             {
                 return 1; /* return error */
             }
         }
+        x += offset;
+        x_int = (uint8_t)roundf(x);
     }
 
     return 0; /* succeed return 0 */
