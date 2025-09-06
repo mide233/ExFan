@@ -28,6 +28,9 @@ void CppMain()
         // ssd1315_gram_draw_rframe(&OledHandle, (float)((int)(easeOutExpo(counter / 30) * 10) % 128), (float)(test_y % 64), 15.0, 15.0, 5);
         switch (page_index)
         {
+        case -1:
+            ui_page_sleep();
+            break;
         case 0:
             ui_page_main();
             break;
@@ -73,14 +76,8 @@ void CppMain()
                 }
                 else if (page_index == 0)
                 {
-                    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6) == GPIO_PIN_RESET)
-                    {
-                        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
-                        HAL_SuspendTick();
-                        HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
-                        HAL_ResumeTick();
-                        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
-                    }
+                    page_index = -1;
+                    ease_counter = 20;
                 }
 
                 // stopFan();

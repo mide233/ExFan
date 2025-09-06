@@ -1,6 +1,6 @@
 #include "ui.h"
 
-uint8_t page_index = 0;
+int8_t page_index = 0;
 uint8_t ease_counter = 20;
 float fan_lock_ease = 0;
 
@@ -65,4 +65,23 @@ void ui_page_fan_status()
     ui_draw_status_bar(46 - (easeOutExpo((float)(20 - (page_index == 1 ? ease_counter : 0)) / 40) * 40 + 5), SW6208_ReadVBUS() * SW6208_ReadIDischarge() / 1000.0f, SW6208_ReadCapacity());
     if (ease_counter > 0 && page_index == 1)
         ease_counter--;
+}
+
+void ui_page_sleep()
+{
+    if (page_index == -1)
+    {
+        if (ease_counter > 0)
+        {
+            ui_page_main();
+            ssd1315_gram_draw_box(&OledHandle, 0, 0, 64 * easeOutExpo((float)(20 - ease_counter) / 20) , 128, SSD1315_COLOR_BLACK, 0);
+            ease_counter -= 2;
+        }
+        else
+        {
+            enterSleep();
+            page_index = 0;
+            ease_counter = 20;
+        }
+    }
 }

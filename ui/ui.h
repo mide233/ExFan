@@ -8,7 +8,7 @@ extern "C"
 
 #include "cxx_main.h"
 
-    extern uint8_t page_index;
+    extern int8_t page_index;
     extern uint8_t ease_counter;
     extern float fan_lock_ease;
 
@@ -16,6 +16,7 @@ extern "C"
     void ui_draw_control_bar(uint8_t y_position);
     void ui_page_main();
     void ui_page_fan_status();
+    void ui_page_sleep();
 
 #ifdef __cplusplus
 }

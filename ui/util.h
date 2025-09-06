@@ -22,6 +22,7 @@ extern "C"
     void applyPwmConf();
     void startFan();
     void stopFan();
+    void enterSleep();
 
 #ifdef __cplusplus
 }

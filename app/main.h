@@ -13,7 +13,6 @@ void *_sbrk(ptrdiff_t incr) { return (void *)-1; }
 #define I2C_DUTYCYCLE I2C_DUTYCYCLE_16_9 /* 占空比 */
 
 void GPIOInit(void);
-void SystemClockConfig(void);
 void Error_Handler(void);
 void TIMInit(void);
 

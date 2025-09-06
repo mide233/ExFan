@@ -71,7 +71,6 @@ void TIMInit(void)
         Error_Handler();
 
     HAL_NVIC_SetPriority(TIM1_BRK_UP_TRG_COM_IRQn, 2, 0);
-    HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);
 
     // CONF SPEED MEASURE TIM
     SpdMesTimConfig.ICPolarity = TIM_ICPOLARITY_FALLING;
@@ -88,7 +87,6 @@ void TIMInit(void)
         Error_Handler();
 
     HAL_NVIC_SetPriority(TIM1_CC_IRQn, 1, 0);
-    HAL_NVIC_EnableIRQ(TIM1_CC_IRQn);
 
     if (HAL_TIM_Base_Start(&SpdMesTimHandle) != HAL_OK)
         Error_Handler();

@@ -220,6 +220,9 @@ void applyPwmConf()
 
 void startFan()
 {
+    HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);
+    HAL_NVIC_EnableIRQ(TIM1_CC_IRQn);
+
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
     applyPwmConf();
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
@@ -232,4 +235,19 @@ void stopFan()
     PwmTimConfig.Pulse = 0;
     applyPwmConf();
     PwmTimConfig.Pulse = p;
+
+    HAL_NVIC_DisableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);
+    HAL_NVIC_DisableIRQ(TIM1_CC_IRQn);
+}
+
+void enterSleep()
+{
+    ssd1315_set_display(&OledHandle, SSD1315_DISPLAY_OFF);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+    HAL_SuspendTick();
+    HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+    SystemClockConfig();
+    HAL_ResumeTick();
+    ssd1315_set_display(&OledHandle, SSD1315_DISPLAY_ON);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
 }

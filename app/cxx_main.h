@@ -33,6 +33,7 @@ extern "C"
     extern uint16_t SpdA, SpdB;
 
     void CppMain(); // 主程序函数
+    void SystemClockConfig(void);
 
     // C PART END
 
