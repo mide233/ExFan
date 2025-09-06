@@ -98,6 +98,10 @@
 #define SSD1315_CMD_COMH_DESLECT_LEVEL 0xDB               /**< command comh deslect level */
 #define SSD1315_CMD_NOP 0xE3                              /**< command nop */
 
+#define SSD1315_COLOR_BLACK 0     /**< black color */
+#define SSD1315_COLOR_WHITE 1     /**< white color */
+#define SSD1315_COLOR_INVERSE 100 /**< inverse color */
+
 /**
  * @brief     write one byte
  * @param[in] *handle pointer to an ssd1315 handle structure
@@ -240,16 +244,24 @@ static uint8_t a_ssd1315_gram_draw_point(ssd1315_handle_t *handle, uint8_t x, ui
     uint8_t bx;
     uint8_t temp = 0;
 
-    pos = y / 8;    /* get y page */
-    bx = y % 8;     /* get y point */
-    temp = 1 << bx; /* set data */
-    if (data != 0)  /* if 1  */
+    pos = y / 8;                     /* get y page */
+    bx = y % 8;                      /* get y point */
+    temp = 1 << bx;                  /* set data */
+    if (data == SSD1315_COLOR_WHITE) /* if 1  */
     {
         handle->gram[x][pos] |= temp; /* set 1 */
     }
-    else
+    else if (data == SSD1315_COLOR_BLACK)
     {
         handle->gram[x][pos] &= ~temp; /* set 0 */
+    }
+    else if (data == SSD1315_COLOR_INVERSE)
+    {
+        handle->gram[x][pos] ^= temp; /* reverse */
+    }
+    else
+    {
+        return 1; /* return error */
     }
 
     return 0; /* success return 0 */
@@ -302,7 +314,7 @@ static uint8_t a_ssd1315_gram_show_char(ssd1315_handle_t *handle, uint8_t x, uin
                     return 1; /* return error */
                 }
             }
-            else
+            else if (mode != SSD1315_COLOR_INVERSE) /* if 0 */
             {
                 if (a_ssd1315_gram_draw_point(handle, x, y, !mode) != 0) /* draw point */
                 {

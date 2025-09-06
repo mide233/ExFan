@@ -25,7 +25,8 @@ void CppMain()
 
         // SW6208_ReadVBUS, SW6208_IsCharging, SW6208_ReadCapacity
         // SW6208_ReadVBUS() * SW6208_ReadIDischarge() / 1000, PwmTimConfig.Pulse, Spd
-        ssd1315_gram_write_string(&OledHandle, 0, 0, (char*)STR_TEST, 14, 1, SSD1315_FONT_16);
+        ssd1315_gram_draw_rbox(&OledHandle, counter, 0, 32, 48, 5);
+        ssd1315_gram_write_string(&OledHandle, 0, 0, (char *)STR_TEST, 14, 100, SSD1315_FONT_16);
 
         // ssd1315_gram_draw_rframe(&OledHandle, (float)((int)(easeOutExpo(counter / 30) * 10) % 128), (float)(test_y % 64), 15.0, 15.0, 5);
 
