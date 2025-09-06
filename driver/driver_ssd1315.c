@@ -531,7 +531,7 @@ uint8_t ssd1315_gram_write_string(ssd1315_handle_t *handle, uint8_t x, uint8_t y
     {
         return 3; /* return error */
     }
-    if ((x > 127) || (y > 63)) /* check x, y */
+    if ((x > 127) || (y > 63 - font)) /* check x, y */
     {
         handle->debug_print("ssd1315: x or y is invalid.\n"); /* x or y is invalid */
 
@@ -542,8 +542,9 @@ uint8_t ssd1315_gram_write_string(ssd1315_handle_t *handle, uint8_t x, uint8_t y
     {
         if (x > (127 - (font / 2))) /* check x point */
         {
-            x = 0;              /* set x */
-            y += (uint8_t)font; /* set next row */
+            // x = 0;              /* set x */
+            // y += (uint8_t)font; /* set next row */
+            break;               /* break */
         }
         if (y > (63 - font)) /* check y pont */
         {

@@ -62,7 +62,19 @@ void ui_page_main()
 
 void ui_page_fan_status()
 {
-    ui_draw_status_bar(46 - (easeOutExpo((float)(20 - (page_index == 1 ? ease_counter : 0)) / 40) * 40 + 5), SW6208_ReadVBUS() * SW6208_ReadIDischarge() / 1000.0f, SW6208_ReadCapacity());
+    uint8_t ease_offset = 46 - (easeOutExpo((float)(20 - (page_index == 1 ? ease_counter : 0)) / 40) * 40 + 5);
+    ui_draw_status_bar(ease_offset, SW6208_ReadVBUS() * SW6208_ReadIDischarge() / 1000.0f, SW6208_ReadCapacity());
+    char msg_buf[16];
+    mini_sprintf(msg_buf, "FAN-A RPM %d", HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6) == GPIO_PIN_SET ? SpdA : 0);
+    ssd1315_gram_write_string(&OledHandle, 2, ease_offset + 18, msg_buf, 16, SSD1315_COLOR_INVERSE, SSD1315_FONT_16);
+    mini_sprintf(msg_buf, "FAN-B RPM %d", HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6) == GPIO_PIN_SET ? SpdB : 0);
+    ssd1315_gram_write_string(&OledHandle, 2, ease_offset + 28, msg_buf, 16, SSD1315_COLOR_INVERSE, SSD1315_FONT_16);
+
+    if (SW6208_IsCharging())
+    {
+        //    ssd1315_gram_draw_box(&OledHandle, 80, ease_offset + 18, 48, 16, SSD1315_COLOR_WHITE, 0);
+    }
+
     if (ease_counter > 0 && page_index == 1)
         ease_counter--;
 }
@@ -74,7 +86,7 @@ void ui_page_sleep()
         if (ease_counter > 0)
         {
             ui_page_main();
-            ssd1315_gram_draw_box(&OledHandle, 0, 0, 64 * easeOutExpo((float)(20 - ease_counter) / 20) , 128, SSD1315_COLOR_BLACK, 0);
+            ssd1315_gram_draw_box(&OledHandle, 0, 0, 64 * easeOutExpo((float)(20 - ease_counter) / 20), 128, SSD1315_COLOR_BLACK, 0);
             ease_counter -= 2;
         }
         else

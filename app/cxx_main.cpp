@@ -109,11 +109,12 @@ void CppMain()
 
             case KEY_CENTER_INDEX:
                 key_status = -1;
-                if (page_index == 0)
+                if (page_index == 0 || page_index == 1)
                 {
                     if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6) == GPIO_PIN_SET)
                         stopFan();
                 }
+
                 break;
             case KEY_CENTER_LONG_PRESS_INDEX:
                 key_status = -1;
