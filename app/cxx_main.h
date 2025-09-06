@@ -18,6 +18,7 @@ extern "C"
 #include "driver_ssd1315.h"
 #include "driver_ssd1315_hal.h"
 #include "sw6208.h"
+#include "ui.h"
 
 #include "key_handler.h"
 

@@ -111,13 +111,15 @@ void TIMInit(void)
     // PwmTimConfig.OCFastMode = TIM_OCFAST_DISABLE;     /* 输出快速使能关闭 */
     PwmTimConfig.OCIdleState = TIM_OCIDLESTATE_RESET; /* 空闲状态OC1输出低电平 */
 
-    PwmTimConfig.Pulse = 600;
+    PwmTimConfig.Pulse = 0;
     /* 配置通道1 */
     if (HAL_TIM_PWM_ConfigChannel(&PwmTimHandle, &PwmTimConfig, TIM_CHANNEL_1) != HAL_OK)
         Error_Handler();
 
     if (HAL_TIM_PWM_Start(&PwmTimHandle, TIM_CHANNEL_1) != HAL_OK)
         Error_Handler();
+
+    PwmTimConfig.Pulse = 600;
 }
 
 uint32_t SpdMesCntA, SpdMesCntB = 0;
