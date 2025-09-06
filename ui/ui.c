@@ -81,7 +81,7 @@ void ui_page_fan_status()
 
 void ui_page_sleep()
 {
-    if (page_index == -1)
+    if (page_index == -1 && HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6) == GPIO_PIN_RESET)
     {
         if (ease_counter > 0)
         {
@@ -95,5 +95,9 @@ void ui_page_sleep()
             page_index = 0;
             ease_counter = 20;
         }
+    }
+    else
+    {
+        page_index = 0;
     }
 }
